@@ -1,0 +1,344 @@
+{
+	"info": {
+		"_postman_id": "34c16258-f24e-4492-9de3-d5f02560d22f",
+		"name": "DEDALUS IoT Agent - JSON - MQTT - NGSI-LD-v1.2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "140869"
+	},
+	"item": [
+		{
+			"name": "Context Broker Operations",
+			"item": [
+				{
+					"name": "Create a Building Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Link",
+								"value": "<{{user-context.jsonld}}>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"urn:ngsi-ld:Building:Building4264\",\n    \"type\": \"Building\",\n    \"address\": {\n        \"type\": \"Property\",\n        \"value\": {\n            \"streetAddress\": \"Valdemarsvej 17\",\n            \"addressRegion\": \"Midtjylland\",\n            \"addressLocality\": \"Herning\",\n            \"postalCode\": \"7400\"\n        }\n    },\n    \"location\": {\n        \"type\": \"GeoProperty\",\n        \"value\": {\n             \"type\": \"Point\",\n             \"coordinates\": [8.973780,56.139320]\n        }\n    },\n    \"name\": {\n        \"type\": \"Property\",\n        \"value\": \"Building4264\"\n    }\n}"
+						},
+						"url": {
+							"raw": "http://{{orion}}/ngsi-ld/v1/entities/",
+							"protocol": "http",
+							"host": [
+								"{{orion}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a Device Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Link",
+								"value": "<{{user-context.jsonld}}>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"urn:ngsi-ld:Device:ws32158\",\n    \"type\": \"Device\",\n\t\"name\":{\"type\":\"Property\",\"value\":\"ws32158\"},\n    \"controlledAsset\": {\n        \"type\": \"Relationship\",\n        \"object\": [\n            \"urn:ngsi-ld:Building:Building4264\"\n        ]\n    },\n    \"controlledProperty\": {\n        \"type\": \"Property\",\n        \"value\": [\n            \"temperature\"\n        ]\n    }\n}    \n"
+						},
+						"url": {
+							"raw": "http://{{orion}}/ngsi-ld/v1/entities/",
+							"protocol": "http",
+							"host": [
+								"{{orion}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read the Building Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							},
+							{
+								"key": "Link",
+								"value": "<{{user-context.jsonld}}>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{orion}}/ngsi-ld/v1/entities/urn:ngsi-ld:Building:Building4264",
+							"protocol": "http",
+							"host": [
+								"{{orion}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities",
+								"urn:ngsi-ld:Building:Building4264"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read the Device Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							},
+							{
+								"key": "Link",
+								"value": "<{{user-context.jsonld}}>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{orion}}/ngsi-ld/v1/entities/urn:ngsi-ld:Device:ws32158",
+							"protocol": "http",
+							"host": [
+								"{{orion}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities",
+								"urn:ngsi-ld:Device:ws32158"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "IoT Agent Operations",
+			"item": [
+				{
+					"name": "Create a Service Group",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"services\": [\n        {\n            \"apikey\": \"Dedalus-Neogrid-Building4264-IndoorClimate\",\n            \"cbroker\": \"http://orion:1026\",\n            \"entity_type\": \"Device\",\n            \"resource\": \"\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "http://{{iot-agent}}/iot/services",
+							"protocol": "http",
+							"host": [
+								"{{iot-agent}}"
+							],
+							"path": [
+								"iot",
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a Provisioned Device",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"devices\": [\n        {\n            \"device_id\": \"ws32158\",\n            \"entity_name\": \"urn:ngsi-ld:Device:ws32158\",\n            \"entity_type\": \"Device\",\n            \"apikey\": \"Dedalus-Neogrid-Building4264-IndoorClimate\",\n            \"protocol\": \"IoTA-JSON\",\n            \"transport\": \"MQTT\",\n            \"timezone\": \"Europe/Berlin\",\n            \"explicitAttrs\": \"['temperature','humidity','co2','batteryVoltage','dateObserved','unitCode']\",\n            \"attributes\": [\n                {\n                    \"object_id\": \"datetime\",\n                    \"name\": \"dateObserved\",\n                    \"type\": \"Property\"\n                },\n                {\n                    \"object_id\": \"temperature\",\n                    \"name\": \"temperature\",\n                    \"type\": \"Property\",\n                    \"metadata\": {\n                        \"unitCode\": {\n                            \"type\": \"Text\",\n                            \"value\": \"CEL\"\n                        }\n                    }\n                },\n                {\n                    \"object_id\": \"humidity\",\n                    \"name\": \"humidity\",\n                    \"type\": \"Property\",\n                    \"metadata\": {\n                        \"unitCode\": {\n                            \"type\": \"Text\",\n                            \"value\": \"P1\"\n                        }\n                    }\n                },\n                {\n                    \"object_id\": \"co2\",\n                    \"name\": \"co2\",\n                    \"type\": \"Property\",\n                    \"metadata\": {\n                        \"unitCode\": {\n                            \"type\": \"Text\",\n                            \"value\": \"KGM\"\n                        }\n                    }\n                },\n                {\n                    \"object_id\": \"batteryVoltage\",\n                    \"name\": \"batteryVoltage\",\n                    \"type\": \"Property\",\n                    \"metadata\": {\n                        \"unitCode\": {\n                            \"type\": \"Text\",\n                            \"value\": \"VLT\"\n                        }\n                    }\n                }\n            ]\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{iot-agent}}/iot/devices/",
+							"protocol": "http",
+							"host": [
+								"{{iot-agent}}"
+							],
+							"path": [
+								"iot",
+								"devices",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all Service Groups",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							}
+						],
+						"url": {
+							"raw": "http://{{iot-agent}}/iot/services",
+							"protocol": "http",
+							"host": [
+								"{{iot-agent}}"
+							],
+							"path": [
+								"iot",
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all Provisioned Devices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "fiware-service",
+								"value": "dedalus"
+							},
+							{
+								"key": "fiware-servicepath",
+								"value": "/neogrid"
+							}
+						],
+						"url": {
+							"raw": "http://{{iot-agent}}/iot/devices",
+							"protocol": "http",
+							"host": [
+								"{{iot-agent}}"
+							],
+							"path": [
+								"iot",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "iot-agent",
+			"value": "localhost:4041"
+		},
+		{
+			"key": "orion",
+			"value": "localhost:1026"
+		},
+		{
+			"key": "user-context.jsonld",
+			"value": "http://context/user-context.jsonld"
+		}
+	]
+}

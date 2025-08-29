@@ -1,0 +1,126 @@
+services:
+  # Orion is the context broker
+  orion:
+    platform: linux/amd64
+    image: quay.io/fiware/orion-ld:${ORION_LD_VERSION}
+    hostname: orion
+    container_name: orion-ld
+    depends_on:
+      - mongo-db
+    restart: unless-stopped
+    networks:
+      - default
+    expose:
+      - "${ORION_LD_PORT}"
+    ports:
+      - ${EXPOSED_PORT:-1026}:${ORION_LD_PORT:-1026}
+    command: -dbhost mongo-db -db orionld -logLevel DEBUG -forwarding -mongocOnly
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:1026/version || exit 1"]
+   
+  # @context file is served from here
+  ld-context:
+    image: httpd:alpine
+    hostname: context
+    container_name: webserver-context
+    ports:
+        - ${WEBSERVER_INTERNAL_PORT}:${WEBSERVER_EXTERNAL_PORT}
+    volumes:
+        - data-models:/usr/local/apache2/htdocs/
+        - type: bind
+          source: ${PWD}/conf/mime.types
+          target: /usr/local/apache2/conf/mime.types
+          read_only: true
+    healthcheck:
+      test: (wget --server-response --spider --quiet  http://context/ngsi-dedalus-context.jsonld 2>&1 | awk 'NR==1{print $$2}'|  grep -q -e "200") || exit 1
+
+  # Databases
+  mongo-db:
+    image: mongo:${MONGO_DB_VERSION}
+    hostname: mongo-db
+    container_name: db-mongo
+    restart: unless-stopped
+    expose:
+      - "${MONGO_DB_PORT}"
+    ports:
+      - "${MONGO_DB_PORT}:${MONGO_DB_PORT}" # localhost:27017
+    networks:
+      - default
+    volumes:
+      - mongo-db:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 }).ok' --quiet | grep -q 1"]
+
+  # IoT-Agent is configured for the JSON Protocol
+  iot-agent:
+    image: quay.io/fiware/iotagent-json:${JSON_VERSION}
+    hostname: iot-agent
+    container_name: iot-agent
+    restart: unless-stopped
+    depends_on:
+      - mongo-db
+      - mosquitto
+    networks:
+      - default
+    expose:
+      - "${IOTA_NORTH_PORT}"
+    ports:
+      - "${IOTA_NORTH_PORT}:${IOTA_NORTH_PORT}" # localhost:4041
+    environment:
+      - IOTA_CB_HOST=orion # name of the context broker to update context
+      - IOTA_CB_PORT=${ORION_LD_PORT} # port the context broker listens on to update context
+      - IOTA_NORTH_PORT=${IOTA_NORTH_PORT}
+      - IOTA_REGISTRY_TYPE=mongodb #Whether to hold IoT device info in memory or in a database
+      - IOTA_LOG_LEVEL=DEBUG # The log level of the IoT Agent
+      - IOTA_TIMESTAMP=false # Supply timestamp information with each measurement
+      - IOTA_AUTOCAST=true # Ensure Ultralight number values are read as numbers not strings
+      - IOTA_MONGO_HOST=mongo-db # The host name of MongoDB
+      - IOTA_MONGO_PORT=${MONGO_DB_PORT} # The port mongoDB is listening on
+      - IOTA_MONGO_DB=iotagentjson # The name of the database used in mongoDB
+      - IOTA_MQTT_HOST=mosquitto # The host name of the MQTT Broker
+      - IOTA_MQTT_PORT=1883 # The port the MQTT Broker is listening on to receive topics
+      - IOTA_DEFAULT_RESOURCE= # Default is blank. I'm using MQTT so I don't need a resource
+      - IOTA_PROVIDER_URL=http://iot-agent:${IOTA_NORTH_PORT}
+      - IOTA_DEFAULT_TRANSPORT=MQTT
+      - IOTA_CB_NGSI_VERSION=ld # use NGSI-LD when sending updates for active attributes
+      - IOTA_JSON_LD_CONTEXT=http://context/ngsi-dedalus-context.jsonld
+      - IOTA_FALLBACK_TENANT=dedalus
+      - IOTA_FALLBACK_PATH=/neogrid
+      - IOTA_MULTI_CORE=true
+    healthcheck:
+      interval: 10s
+
+  # Other services
+  mosquitto:
+    image: eclipse-mosquitto:${MOSQUITTO_VERSION}
+    hostname: mosquitto
+    container_name: mosquitto
+    expose:
+      - "${MOSQUITTO_MQTT_PORT}"
+      - "${MOSQUITTO_WEBSOCKETS_PORT}"
+    ports:
+      - "${MOSQUITTO_MQTT_PORT}:${MOSQUITTO_MQTT_PORT}"
+      - "${MOSQUITTO_WEBSOCKETS_PORT}:${MOSQUITTO_WEBSOCKETS_PORT}"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1 || exit 1"]
+      
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.18.2.0/24
+
+volumes:
+  mongo-db: ~
+  mongo-config: ~
+  data-models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data-models
