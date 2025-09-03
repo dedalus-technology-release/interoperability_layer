@@ -33,8 +33,6 @@ The main components of this architecture are:
 │   └── ngsi-dedalus-context.jsonld
 ├── conf/
 │   └── mime.types                # Ensures correct MIME for .jsonld
-├── scripts/                      # Custom data acquisition and mapping 
-│   └── ...                       # DO NOT COMMIT sensitive data
 ├── script/
 │   └── Pilot/            # Provisioning and registration logic
 └── README.md
@@ -56,24 +54,6 @@ These are served from the `ld-context` service and referenced in payloads via UR
   "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.8.jsonld"
 ]
 ```
-
-## Customization (Data Gathering)
-
-Custom logic for acquiring, transforming, or mapping pilot-specific data sources is placed in:
-```plaintext
-./scripts/
-```
-
-
-This directory contains scripts and Dockerfiles for:
-
-- Connecting to external APIs or data sources (e.g., climate sensors, building systems)
-- Parsing and normalizing raw data
-- Creating NGSI-LD-compliant entities for injection into Orion-LD
-
-> This folder may contain sensitive data or credentials. Do **not** commit personal information. Use `.env` files or secrets management when necessary.
-
-Each service can be run as a standalone microservice, already integrated into the `docker-compose.yml`.
 
 ## Entity Provisioning (Customization)
 
