@@ -1,6 +1,6 @@
 curl --location 'http://iot-agent:4041/iot/services' \
---header 'fiware-service: dedalus' \
---header 'fiware-servicepath: /neogrid' \
+--header 'fiware-service: "YOUR_FIWARE-SERVICE"' \
+--header 'fiware-servicepath: "YOUR_FIWARE-SERVICEPATH"' \
 --header 'Content-Type: application/json' \
 --data '{
     "services": [

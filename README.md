@@ -1,28 +1,28 @@
-# 🔌 DEDALUS – Interoperability Layer (FIWARE-Based Architecture)
+# DEDALUS – Interoperability Layer (FIWARE-Based Architecture)
 
 This repository contains a modular and extensible **FIWARE-based Interoperability Layer**, built on top of the **NGSI-LD standard**, designed to enable real-time communication and semantic data exchange between heterogeneous IoT systems.
 
 ---
 
-## 🧱 Core Components
+## Core Components
 
 The main components of this architecture are:
 
-- **🟡 NGSI-LD IoT Agent (JSON over MQTT)**  
+- **NGSI-LD IoT Agent (JSON over MQTT)** 
   Receives measurements from devices via MQTT (JSON payload), maps them into NGSI-LD format, and forwards them to the Context Broker.
 
-- **🟢 Orion-LD Context Broker**  
+- **Orion-LD Context Broker**  
   Core component responsible for managing entities, context data, subscriptions, and registrations using NGSI-LD.
 
-- **🗃️ MongoDB**  
+- **MongoDB**  
   Persistent data storage used by Orion-LD and the IoT Agent.
 
-- **📂 Apache HTTP Server**  
+- **Apache HTTP Server**  
   Lightweight service used to serve JSON-LD context files (`@context`), including domain-specific customizations.
 
 ---
 
-## 📂 Repository Structure
+##  Repository Structure
 
 ```text
 .
@@ -40,7 +40,7 @@ The main components of this architecture are:
 └── README.md
 ```
 
-## 🔧 JSON-LD Context Customization
+## JSON-LD Context Customization
 
 Custom JSON-LD context files should be placed in:
 
@@ -57,7 +57,7 @@ These are served from the `ld-context` service and referenced in payloads via UR
 ]
 ```
 
-## 🧩 Customization (Data Gathering)
+## Customization (Data Gathering)
 
 Custom logic for acquiring, transforming, or mapping pilot-specific data sources is placed in:
 ```plaintext
@@ -71,11 +71,11 @@ This directory contains scripts and Dockerfiles for:
 - Parsing and normalizing raw data
 - Creating NGSI-LD-compliant entities for injection into Orion-LD
 
-> ⚠️ This folder may contain sensitive data or credentials. Do **not** commit personal information. Use `.env` files or secrets management when necessary.
+> This folder may contain sensitive data or credentials. Do **not** commit personal information. Use `.env` files or secrets management when necessary.
 
 Each service can be run as a standalone microservice, already integrated into the `docker-compose.yml`.
 
-## 🛠️ Entity Provisioning (Customization)
+## Entity Provisioning (Customization)
 
 The **provisioning** phase involves registering devices, their metadata, and relationships within the Context Broker so that the platform can correctly recognize and manage them.
 
@@ -98,7 +98,7 @@ You can customize these scripts for your pilot needs and extend them to include 
 
 Provisioning is automatically triggered when the stack is up and the IoT Agent is healthy.
 
-## 🛠️ Provisioning Scripts: Organization and Execution
+## Provisioning Scripts: Organization and Execution
 
 ### Script Organization
 
@@ -119,7 +119,7 @@ A Python helper script (`read_script.py`) is used to automate the execution of t
 - Executes only scripts containing `curl` commands, skipping others.
 - Prints output and errors of each command for easier debugging.
 
-### 🛠️ Automated Provisioning via Docker Compose
+### Automated Provisioning via Docker Compose
 
 The provisioning process is fully automated and runs inside a dedicated Docker container managed by `docker-compose.yml`.
 
@@ -141,4 +141,4 @@ Run containers with one of these commands:
 
 Stop containers with one of these commands:
 - `$ docker compose down` or
-- `$ docker rm -f $(docker ps -aq)` (⚠️ removes ALL Docker containers!)
+- `$ docker rm -f $(docker ps -aq)` (removes ALL Docker containers!)
