@@ -8,7 +8,7 @@ This repository contains a modular and extensible **FIWARE-based Interoperabilit
 
 The main components of this architecture are:
 
-- **NGSI-LD IoT Agent (JSON over MQTT)** 
+- **NGSI-LD IoT Agent (JSON over MQTT)**
   Receives measurements from devices via MQTT (JSON payload), maps them into NGSI-LD format, and forwards them to the Context Broker.
 
 - **Orion-LD Context Broker**  
