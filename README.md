@@ -57,7 +57,7 @@ These are served from the `ld-context` service and referenced in payloads via UR
 ]
 ```
 
-## 🧩 ETL Customization (Data Gathering)
+## 🧩 Customization (Data Gathering)
 
 Custom logic for acquiring, transforming, or mapping pilot-specific data sources is placed in:
 ```plaintext
