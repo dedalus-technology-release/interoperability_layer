@@ -1,0 +1,14 @@
+curl --location 'http://iot-agent:4041/iot/services' \
+--header 'fiware-service: dedalus' \
+--header 'fiware-servicepath: /neogrid' \
+--header 'Content-Type: application/json' \
+--data '{
+    "services": [
+        {
+            "apikey": "YOUR_API_KEY_HERE",
+            "cbroker": "http://orion:1026",
+            "entity_type": "Device",
+            "resource": ""
+        }
+    ]
+}'

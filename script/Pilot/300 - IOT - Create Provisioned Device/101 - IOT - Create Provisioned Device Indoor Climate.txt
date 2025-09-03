@@ -1,0 +1,58 @@
+curl --location 'http://iot-agent:4041/iot/devices/' \
+--header 'fiware-service: dedalus' \
+--header 'fiware-servicepath: /neogrid' \
+--header 'Content-Type: application/json' \
+--data '{
+    "devices": [
+        {
+            "device_id": "device1234",
+            "entity_name": "urn:ngsi-ld:Device:device1234",
+            "entity_type": "Device",
+            "apikey": "YOUR_API_KEY_HERE",
+            "protocol": "IoTA-JSON",
+            "transport": "MQTT",
+            "timezone": "Europe/Berlin",
+            "explicitAttrs": "['temperature','humidity','co2','dateObserved','unitCode']",
+            "attributes": [
+                {
+                    "object_id": "datetime",
+                    "name": "dateObserved",
+                    "type": "Property"
+                },
+                {
+                    "object_id": "temperature",
+                    "name": "temperature",
+                    "type": "Property",
+                    "metadata": {
+                        "unitCode": {
+                            "type": "Text",
+                            "value": "CEL"
+                        }
+                    }
+                },
+                {
+                    "object_id": "humidity",
+                    "name": "humidity",
+                    "type": "Property",
+                    "metadata": {
+                        "unitCode": {
+                            "type": "Text",
+                            "value": "P1"
+                        }
+                    }
+                },
+                {
+                    "object_id": "co2",
+                    "name": "co2",
+                    "type": "Property",
+                    "metadata": {
+                        "unitCode": {
+                            "type": "Text",
+                            "value": "KGM"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}'

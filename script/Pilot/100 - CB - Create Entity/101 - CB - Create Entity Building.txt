@@ -1,0 +1,29 @@
+curl --location 'http://orion:1026/ngsi-ld/v1/entities/' \
+--header 'fiware-service: dedalus' \
+--header 'fiware-servicepath: /neogrid' \
+--header 'Content-Type: application/json' \
+--header 'Link: <http://context/ngsi-dedalus-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \   ## If a custom model is used, change the link.
+--data '{
+  "id": "urn:ngsi-ld:Building:Building1234",
+  "type": "Building",
+  "address": {
+    "type": "Property",
+    "value": {
+      "streetAddress": "Example Street 1",
+      "addressRegion": "RegionName",
+      "addressLocality": "CityName",
+      "postalCode": "00000"
+    }
+  },
+  "location": {
+    "type": "GeoProperty",
+    "value": {
+       "type": "Point",
+       "coordinates": [0.000000, 0.000000]
+    }
+  },
+  "name": {
+    "type": "Property",
+    "value": "Example Building"
+  }
+}'
