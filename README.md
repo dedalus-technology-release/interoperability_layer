@@ -108,11 +108,11 @@ Provisioning scripts are organized into numbered folders representing different 
 - `200 - IOT - Create Service Group`
 - `300 - IOT - Create Provisioned Device`
 
-Each folder contains multiple script files named with numeric prefixes (e.g., `001_create_building_entity.sh`, `002_register_service.sh`) to indicate execution order.
+Each folder contains multiple script files named with numeric prefixes (e.g., In our case `101 - CB - Create Entity Building.txt`, `102 - CB - Create Entity Building.txt`) to indicate execution order.
 
 ### Automation Script
 
-A Python helper script (`run_provisioning_scripts.py`) is used to automate the execution of these provisioning scripts. It:
+A Python helper script (`read_script.py`) is used to automate the execution of these provisioning scripts. It:
 
 - Reads all script files in the specified folders.
 - Sorts them by their numeric prefixes to ensure the correct execution order.
