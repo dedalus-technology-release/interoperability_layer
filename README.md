@@ -1,5 +1,34 @@
 # Interoperability Layer – Project Overview
 
+## Table of Contents
+
+- [Interoperability Concept](#interoperability-concept)
+- [Architecture Overview](#architecture-overview)
+- [MQTT Message Format](#mqtt-message-format)
+- [Docker Components](#docker-components)
+  - [MQTT Broker (Mosquitto)](#mqtt-broker-mosquitto)
+  - [IoT Agent Configuration](#iot-agent-configuration)
+  - [Context Broker (Orion-LD)](#context-broker-orion-ld)
+  - [Web Server (Context Host)](#web-server-context-host)
+  - [MongoDB](#mongodb)
+- [Running the System with Docker Compose](#running-the-system-with-docker-compose)
+- [Verify Running Services](#verify-running-services)
+- [Provisioning Examples](#provisioning-examples)
+- [Summary – Device Provisioning Parameters Explained](#summary--device-provisioning-parameters-explained)
+- [Interoperability Levels](#interoperability-levels)
+- [Example Use Case](#example-use-case)
+- [Environment Variables](#environment-variables)
+- [Expected Folder Structure](#expected-folder-structure)
+- [Troubleshooting](#troubleshooting)
+- [References](#references)
+
+
+## Prerequisites
+- Docker (20.10+)
+- Docker Compose (1.29+)
+- Internet connection for image pulls
+
+
 ## Interoperability Concept
 
 According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged."
@@ -91,6 +120,47 @@ http://context/ngsi-project-context.jsonld
 ### MongoDB
 
 Stores all provisioning and context data. Runs on port `27017`.
+
+## Running the System with Docker Compose
+
+The `docker-compose.yml` file provided in this project sets up all required FIWARE components (Orion-LD, IoT Agent, MongoDB, MQTT Broker, Context Server) for a complete semantic IoT integration stack.
+
+>  **Note**:  
+> The configuration is currently tailored for the **Dedalus** project and uses:
+> - A custom `ngsi-dedalus-context.jsonld` context file located in the `models/` directory
+> - Default tenant (`dedalus`) and service path (`/neogrid`) for provisioning
+>
+> However, it is **fully customizable**. You can easily modify:
+> - The context file (e.g., replace with `ngsi-yourproject-context.jsonld`)
+> - The `IOTA_FALLBACK_TENANT`, `IOTA_FALLBACK_PATH`, and `IOTA_JSON_LD_CONTEXT` environment variables
+> - MQTT topic structure via the `apikey` used during provisioning
+
+### Run the System
+
+To spin up the full environment, run:
+
+```bash
+docker-compose up -d
+```
+This will:
+- Build and start all services in **detached mode** (`-d`)
+- Serve your context file from:  
+  `http://localhost:3004/ngsi-dedalus-context.jsonld` *(or your custom context)*
+- Expose the **IoT Agent** on:  
+  `http://localhost:4041`
+- Expose the **Orion Context Broker (Orion-LD)** on:  
+  `http://localhost:1026`
+- Expose the **MQTT Broker** on:  
+  `tcp://localhost:1883`
+
+### Verify Running Services
+
+Use the following command to check that all services are up and healthy:
+
+```bash
+docker ps
+```
+You should see all containers (orion-ld, iot-agent, mongo-db, mosquitto, webserver-context) with the status healthy or up
 
 ## Provisioning Examples
 This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
@@ -261,3 +331,31 @@ Payload:
 Multiple deployments (e.g., in different countries) can:
 - Use localized context files for internal data management.
 - Maintain external semantic alignment via standard URIs and context definitions.
+
+
+### Environment Variables
+
+The `docker-compose.yml` relies on environment variables defined in the `.env` file. Customize ports, versions, and paths according to your environment.
+
+### Expected Folder Structure
+```plaintext
+project-root/
+├── docker-compose.yml
+├── .env
+├── models/
+│ └── ngsi-project-context.jsonld
+├── conf/
+│ └── mime.types
+├── mosquitto/
+│ └── mosquitto.conf
+```
+Ensure that volume mounts in Docker Compose correspond to these paths.
+### Troubleshooting
+- **Port conflicts:** Check if ports 1026, 4041, 27017, 1883, 3004 are free.
+- **MQTT messages not received:** Verify Mosquitto config and topic subscription.
+- **Device provisioning fails:** Double-check API keys and service paths.
+
+### References
+- [FIWARE NGSI-LD API](https://fiware.github.io/specifications/ngsild/)
+- [MQTT Protocol](https://mqtt.org/)
+- [JSON-LD Contexts](https://www.w3.org/TR/json-ld11/)
