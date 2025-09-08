@@ -1,3 +1,0 @@
-curl --location 'http://localhost:4041/iot/devices' \
---header 'fiware-service: dedalus' \
---header 'fiware-servicepath: /neogrid'

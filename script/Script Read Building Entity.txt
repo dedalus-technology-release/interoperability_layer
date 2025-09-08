@@ -1,4 +1,0 @@
-curl --location 'http://localhost:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Building:Building4264' \
---header 'fiware-service: dedalus' \
---header 'fiware-servicepath: /neogrid' \
---header 'Link: <http://context/ngsi-dedalus-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
