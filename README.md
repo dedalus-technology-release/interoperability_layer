@@ -1,124 +1,243 @@
-# DEDALUS – Interoperability Layer (FIWARE-Based Architecture)
+# Interoperability Layer – Project Overview
 
-This repository contains a modular and extensible **FIWARE-based Interoperability Layer**, built on top of the **NGSI-LD standard**, designed to enable real-time communication and semantic data exchange between heterogeneous IoT systems.
+## Interoperability Concept
 
----
+According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged."
 
-## Core Components
+This project emphasizes **semantic interoperability**, allowing various system components to:
+- Access shared data through a common vocabulary (e.g., using standard URIs like `https://w3id.org/dco#Temperature`).
+- Maintain their local terminology (e.g., `temperature`, `temperatura`, `temperatur`) while remaining interoperable.
 
-The main components of this architecture are:
+## Architecture Overview
 
-- **NGSI-LD IoT Agent (JSON over MQTT)**
-  Receives measurements from devices via MQTT (JSON payload), maps them into NGSI-LD format, and forwards them to the Context Broker.
+The system leverages a **FIWARE-based architecture** consisting of the following core components:
 
-- **Orion-LD Context Broker**  
-  Core component responsible for managing entities, context data, subscriptions, and registrations using NGSI-LD.
+- **IoT Agent (NGSI-JSON)**: Receives device measurements via MQTT (in JSON) and converts them to NGSI-LD format.
+- **Orion Context Broker (Orion-LD)**: Manages context data (entities, attributes, etc.) in NGSI-LD format.
+- **MongoDB**: Stores IoT Agent and Context Broker data.
+- **Mosquitto MQTT Broker**: Manages message exchange between devices and the IoT Agent.
+- **HTTP Web Server**: Serves JSON-LD context files for data model semantics.
 
-- **MongoDB**  
-  Persistent data storage used by Orion-LD and the IoT Agent.
 
-- **Apache HTTP Server**  
-  Lightweight service used to serve JSON-LD context files (`@context`), including domain-specific customizations.
+## MQTT Message Format
+Devices publish their sensor data to MQTT topics with a specific pattern to enable the IoT Agent to properly route and process the data.
 
----
-
-##  Repository Structure
-
-```text
-.
-├── docker-compose.yml            # Main Docker Compose file
-├── .env                          # Environment configuration file
-├── data-models/                  # Custom JSON-LD context files
-│   ├── user-context.jsonld
-│   └── ngsi-dedalus-context.jsonld
-├── conf/
-│   └── mime.types                # Ensures correct MIME for .jsonld
-├── script/
-│   └── Pilot/            # Provisioning and registration logic
-└── README.md
+**Topic format:**
+```
+/json/<api-key>/<device-id>/attrs
 ```
 
-## JSON-LD Context Customization
-
-Custom JSON-LD context files should be placed in:
-
-```plaintext
-./data-models/
+**Example:**
+```
+/json/Project-Building4264/ws32158/attrs
 ```
 
-These are served from the `ld-context` service and referenced in payloads via URLs such as:
-
+**Payload example:**
 ```json
-"@context": [
-  "http://context/user-context.jsonld",
-  "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.8.jsonld"
-]
+{
+  "datetime": "2024-09-05T15:00:00.000000Z",
+  "humidity": 61.33,
+  "temperature": 25.13,
+  "co2": 419.0,
+  "batteryVoltage": 3.6
+}
+```
+Each payload contains the timestamp (datetime) and sensor measurements. The IoT Agent listens on these topics and converts incoming data into NGSI-LD format.
+## Docker Components
+The system runs as Docker containers for easy deployment and management.
+
+### MQTT Broker (Mosquitto)
+
+- Connects devices and the IoT Agent using MQTT protocol.
+- Can be configured to connect to a public broker or run locally.
+- Example Mosquitto configuration includes subscribing to relevant topics, e.g.:
+```yaml
+
+connection remote_mosquitto
+address test.mosquitto.org:1883
+topic /json/Project-Building4264/# in
 ```
 
-## Entity Provisioning (Customization)
+### IoT Agent Configuration
 
-The **provisioning** phase involves registering devices, their metadata, and relationships within the Context Broker so that the platform can correctly recognize and manage them.
+Exposed on port `4041`. Key environment variables:
+```bash
 
-### Where is the provisioning located?
-
-Provisioning scripts are located in the folder:
-
-
-```plaintext
-./script/Pilot/
+IOTA_CB_HOST=orion                  # Context Broker hostname
+IOTA_MQTT_HOST=mosquitto            # MQTT Broker hostname
+IOTA_CB_NGSI_VERSION=ld             # Use NGSI-LD format
+IOTA_JSON_LD_CONTEXT=http://context/ngsi-project-context.jsonld
+IOTA_FALLBACK_TENANT=your_project
+IOTA_FALLBACK_PATH=/your_project_path
 ```
 
-This folder includes example provisioning scripts based on the **Dedalus** pilot. These examples cover:
+### Context Broker (Orion-LD)
 
-- Startup scripts for registering device metadata
-- Mapping of device IDs, MQTT topics, and NGSI-LD attributes
-- Optional test data injection
+Runs on port `1026`, responsible for storing and updating NGSI-LD entities. Configuration includes:
 
-You can customize these scripts for your pilot needs and extend them to include subscriptions, relationships, and default data values.
+```bash
+-dbhost mongo-db
+-db orionld
+-logLevel DEBUG
+```
 
-Provisioning is automatically triggered when the stack is up and the IoT Agent is healthy.
+### Web Server (Context Host)
 
-## Provisioning Scripts: Organization and Execution
+Run on port `3004`. Serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
+```
+http://context/ngsi-project-context.jsonld
+```
 
-### Script Organization
+### MongoDB
 
-Provisioning scripts are organized into numbered folders representing different provisioning phases or tasks, for example:
+Stores all provisioning and context data. Runs on port `27017`.
 
-- `100 - CB - Create Entity`
-- `200 - IOT - Create Service Group`
-- `300 - IOT - Create Provisioned Device`
+## Provisioning Examples
+This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
 
-Each folder contains multiple script files named with numeric prefixes (e.g., In our case `101 - CB - Create Entity Building.txt`, `102 - CB - Create Entity Building.txt`) to indicate execution order.
+## Context File Example (`ngsi-project-context.jsonld`)
+Defines the semantic context used across the system, mapping attribute names to standardized URIs:
+```json
+{
+  "@context": {
+    "type": "@type",
+    "id": "@id",
+    "ngsi-ld": "https://uri.etsi.org/ngsi-ld/",
+    "fiware": "https://uri.fiware.org/ns/dataModels#",
+    "schema": "https://schema.org/",
+    "Building": "https://w3id.org/dco#Building",
+    "Device": "https://w3id.org/dco#Device",
+    "temperature": "https://w3id.org/dco#Temperature",
+    "humidity": "https://w3id.org/dco#Humidity",
+    "co2": "https://w3id.org/dco#CO2Concentration",
+    "batteryVoltage": "https://w3id.org/dco#BatteryVoltage",
+    "controlledAsset": "fiware:controlledAsset",
+    "dateObserved": "http://www.w3.org/2001/XMLSchema#date"
+  }
+}
+```
 
-### Automation Script
+### Building Entity
+Create a building entity in the Context Broker with semantic attributes for address and location:
 
-A Python helper script (`read_script.py`) is used to automate the execution of these provisioning scripts. It:
+```http
+POST http://localhost:1026/ngsi-ld/v1/entities/
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
+  Link: <http://context/ngsi-project-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"
 
-- Reads all script files in the specified folders.
-- Sorts them by their numeric prefixes to ensure the correct execution order.
-- Executes only scripts containing `curl` commands, skipping others.
-- Prints output and errors of each command for easier debugging.
+Payload:
+{
+  "id": "urn:ngsi-ld:Building:Building4264",
+  "type": "Building",
+  "address": {
+    "type": "Property",
+    "value": {
+      "streetAddress": "Example Street 17",
+      "addressRegion": "Region",
+      "addressLocality": "City",
+      "postalCode": "0000"
+    }
+  },
+  "location": {
+    "type": "GeoProperty",
+    "value": {
+      "type": "Point",
+      "coordinates": [0.000000, 0.000000]
+    }
+  },
+  "name": {
+    "type": "Property",
+    "value": "Building4264"
+  }
+}
+```
 
-### Automated Provisioning via Docker Compose
+### Device Entity
+Associate a device with the building entity, enabling its measurements to be linked to a specific asset:
+```http
+POST http://localhost:1026/ngsi-ld/v1/entities/
+Headers: same as above
 
-The provisioning process is fully automated and runs inside a dedicated Docker container managed by `docker-compose.yml`.
+Payload:
+{
+  "id": "urn:ngsi-ld:Device:ws32158",
+  "type": "Device",
+  "name": {"type": "Property", "value": "ws32158"},
+  "controlledAsset": {
+    "type": "Relationship",
+    "object": ["urn:ngsi-ld:Building:Building4264"]
+  }
+}
+```
 
-- The `provisioning` service is built from `script/Pilot/Dockerfile`.
-- It depends on the `iot-agent` service and starts only after `iot-agent` passes its health check.
-- This container runs the Python helper script described above, executing all provisioning commands in order.
-- Provisioning logs can be inspected via `docker logs provisioning`.
+### Service Group Provisioning
+Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
+```http
+POST http://localhost:4041/iot/services
+Headers: same as above
+Payload:
+{
+  "services": [
+    {
+      "apikey": "Project-Building4264",
+      "cbroker": "http://orion:1026",
+      "entity_type": "Device",
+      "resource": ""
+    }
+  ]
+}
+```
 
-### Benefits
+### Device Provisioning
+Configure the device in the IoT Agent, defining its protocol, transport, attributes, and timezone:
+```http
+POST http://localhost:4041/iot/devices
+Headers:
+  fiware-service: project
+  fiware-servicepath: /building4264
+Payload:
+{
+  "devices": [
+    {
+      "device_id": "ws32158",
+      "entity_name": "urn:ngsi-ld:Device:ws32158",
+      "entity_type": "Device",
+      "apikey": "Project-Building4264",
+      "protocol": "IoTA-JSON",
+      "transport": "MQTT",
+      "timezone": "Europe/Berlin",
+      "explicitAttrs": [
+        "temperature", "humidity", "co2", "batteryVoltage", "dateObserved", "unitCode"
+      ],
+      "attributes": [
+        {"object_id": "datetime", "name": "dateObserved", "type": "Property"},
+        {"object_id": "temperature", "name": "temperature", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "CEL"}}},
+        {"object_id": "humidity", "name": "humidity", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "P1"}}},
+        {"object_id": "co2", "name": "co2", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "KGM"}}},
+        {"object_id": "batteryVoltage", "name": "batteryVoltage", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "VLT"}}}
+      ]
+    }
+  ]
+}
+```
 
-- **Automatic execution:** provisioning runs without manual intervention.
-- **Ordered provisioning:** numeric prefixes enforce execution order.
-- **Isolated environment:** provisioning runs in a dedicated container separate from main services.
 
-### How to run 
-Run containers with one of these commands:
-- `$ docker compose up -d` or, e.g.,
-- `$ PORT=8080 docker compose up -d` (to run the demo, e.g., from http://localhost:8080)
 
-Stop containers with one of these commands:
-- `$ docker compose down` or
-- `$ docker rm -f $(docker ps -aq)` (removes ALL Docker containers!)
+## Interoperability Levels
+
+1. **Device Level**: Each device can use its native terminology while remaining compatible with the system via configured transformation rules.
+2. **IoT Agent Level**: Attribute mapping during provisioning ensures correct transformation to NGSI-LD format.
+3. **Context Broker Level**: Context files allow external stakeholders to understand the data model in a consistent and multilingual way.
+
+## Example Use Case
+
+Multiple deployments (e.g., in different countries) can:
+- Use localized context files for internal data management.
+- Maintain external semantic alignment via standard URIs and context definitions.
