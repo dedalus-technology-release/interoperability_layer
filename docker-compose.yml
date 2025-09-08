@@ -108,17 +108,6 @@ services:
       - default
     healthcheck:
       test: ["CMD-SHELL", "timeout 5 mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1 || exit 1"]
-
-provisioning:
-    build:
-      context: .
-      dockerfile: "script/Pilot/Dockerfile"
-    container_name: provisioning
-    depends_on:
-      iot-agent:
-        condition: service_healthy
-    networks:
-      - default
       
 networks:
   default:
