@@ -239,7 +239,7 @@ Payload:
 | Parameter        | Description |
 |------------------|-------------|
 | `device_id`      | The unique identifier for the device as seen in the MQTT topic. It is used to match incoming data from the topic `/json/<apikey>/<device_id>/attrs`. |
-| `entity_name`    | The NGSI-LD URN for the device entity that will be created in the Context Broker. It should follow the format: `urn:ngsi-ld:<EntityType>:<Value>`. |
+| `entity_name`    | The NGSI-LD URN for the device entity that will be created in the Context Broker. It should follow the format: `urn:ngsi-ld:<entity_type>:<device_id>`. |
 | `entity_type`    | The type of the entity, typically `"Device"`, used by the Context Broker for classification. |
 | `apikey`         | A key used to distinguish services and filter MQTT topics. It becomes part of the MQTT topic structure (e.g., `/json/<apikey>/...`). |
 | `protocol`       | Specifies the format of the incoming payload. In this case: `"IoTA-JSON"` for plain JSON format. |
