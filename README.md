@@ -80,7 +80,7 @@ Each payload contains the timestamp (datetime) and sensor measurements. The IoT 
 ## Docker Components
 The system runs as Docker containers for easy deployment and management.
 
-## MQTT Broker (Mosquitto)
+### MQTT Broker (Mosquitto)
 
 - Connects devices and the IoT Agent using MQTT protocol.
 - Can be configured to connect to a public broker or run locally.
@@ -92,7 +92,7 @@ address test.mosquitto.org:1883
 topic /json/Project-Building4264/# in
 ```
 
-## IoT Agent Configuration
+### IoT Agent Configuration
 
 Exposed on port `4041`. Key environment variables:
 ```bash
@@ -105,7 +105,7 @@ IOTA_FALLBACK_TENANT=your_project
 IOTA_FALLBACK_PATH=/your_project_path
 ```
 
-## Context Broker (Orion-LD)
+### Context Broker (Orion-LD)
 
 Runs on port `1026`, responsible for storing and updating NGSI-LD entities. Configuration includes:
 
@@ -115,18 +115,18 @@ Runs on port `1026`, responsible for storing and updating NGSI-LD entities. Conf
 -logLevel DEBUG
 ```
 
-## Web Server (Context Host)
+### Web Server (Context Host)
 
 Run on port `3004`. Serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
 ```
 http://context/ngsi-project-context.jsonld
 ```
 
-## MongoDB
+### MongoDB
 
 Stores all provisioning and context data. Runs on port `27017`.
 
-### Running the System with Docker Compose
+## Running the System with Docker Compose
 
 The `docker-compose.yml` file provided in this project sets up all required FIWARE components (Orion-LD, IoT Agent, MongoDB, MQTT Broker, Context Server) for a complete semantic IoT integration stack.
 
@@ -140,7 +140,7 @@ The `docker-compose.yml` file provided in this project sets up all required FIWA
 > - The `IOTA_FALLBACK_TENANT`, `IOTA_FALLBACK_PATH`, and `IOTA_JSON_LD_CONTEXT` environment variables
 > - MQTT topic structure via the `apikey` used during provisioning
 
-### Run the System
+## Run the System
 
 To spin up the full environment, run:
 
@@ -158,7 +158,7 @@ This will:
 - Expose the **MQTT Broker** on:  
   `tcp://localhost:1883`
 
-### Verify Running Services
+## Verify Running Services
 
 Use the following command to check that all services are up and healthy:
 
@@ -167,10 +167,10 @@ docker ps
 ```
 You should see all containers (orion-ld, iot-agent, mongo-db, mosquitto, webserver-context) with the status healthy or up
 
-### Provisioning Examples
+## Provisioning Examples
 This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
 
-## Context File Example (`ngsi-project-context.jsonld`)
+### Context File Example (`ngsi-project-context.jsonld`)
 Defines the semantic context used across the system, mapping attribute names to standardized URIs:
 ```json
 {
@@ -192,7 +192,7 @@ Defines the semantic context used across the system, mapping attribute names to 
 }
 ```
 
-## Building Entity Provisioning
+### Building Entity Provisioning
 Create a building entity in the Context Broker with semantic attributes for address and location:
 
 ```http
@@ -230,7 +230,7 @@ Payload:
 }
 ```
 
-## Device Entity Provisioning
+### Device Entity Provisioning
 Associate a device with the building entity, enabling its measurements to be linked to a specific asset:
 ```http
 POST http://localhost:1026/ngsi-ld/v1/entities/
@@ -251,7 +251,7 @@ Payload:
 }
 ```
 
-## Service Group Provisioning
+### Service Group Provisioning
 Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
 ```http
 POST http://localhost:4041/iot/services
@@ -272,7 +272,7 @@ Payload:
 }
 ```
 
-## Device Provisioning
+### Device Provisioning
 Configure the device in the IoT Agent, defining its protocol, transport, attributes, and timezone:
 ```http
 POST http://localhost:4041/iot/devices
@@ -309,7 +309,7 @@ Payload:
   ]
 }
 ```
-## Summary – Device Provisioning Parameters Explained
+### Summary – Device Provisioning Parameters Explained
 
 | Parameter        | Description |
 |------------------|-------------|
@@ -331,7 +331,7 @@ Payload:
 2. **IoT Agent Level**: Attribute mapping during provisioning ensures correct transformation to NGSI-LD format.
 3. **Context Broker Level**: Context files allow external stakeholders to understand the data model in a consistent and multilingual way.
 
-## Example Use Case
+### Example Use Case
 
 Multiple deployments (e.g., in different countries) can:
 - Use localized context files for internal data management.
