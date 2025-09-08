@@ -159,7 +159,10 @@ Payload:
 Associate a device with the building entity, enabling its measurements to be linked to a specific asset:
 ```http
 POST http://localhost:1026/ngsi-ld/v1/entities/
-Headers: same as above
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
 
 Payload:
 {
@@ -177,7 +180,10 @@ Payload:
 Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
 ```http
 POST http://localhost:4041/iot/services
-Headers: same as above
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
 Payload:
 {
   "services": [
@@ -196,8 +202,9 @@ Configure the device in the IoT Agent, defining its protocol, transport, attribu
 ```http
 POST http://localhost:4041/iot/devices
 Headers:
-  fiware-service: project
-  fiware-servicepath: /building4264
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
 Payload:
 {
   "devices": [
