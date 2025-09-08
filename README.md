@@ -234,6 +234,19 @@ Payload:
   ]
 }
 ```
+## Summary – Device Provisioning Parameters Explained
+
+| Parameter        | Description |
+|------------------|-------------|
+| `device_id`      | The unique identifier for the device as seen in the MQTT topic. It is used to match incoming data from the topic `/json/<apikey>/<device_id>/attrs`. |
+| `entity_name`    | The NGSI-LD URN for the device entity that will be created in the Context Broker. It should follow the format: `urn:ngsi-ld:<EntityType>:<Value>`. |
+| `entity_type`    | The type of the entity, typically `"Device"`, used by the Context Broker for classification. |
+| `apikey`         | A key used to distinguish services and filter MQTT topics. It becomes part of the MQTT topic structure (e.g., `/json/<apikey>/...`). |
+| `protocol`       | Specifies the format of the incoming payload. In this case: `"IoTA-JSON"` for plain JSON format. |
+| `transport`      | Communication protocol used by the device, typically `"MQTT"` for lightweight IoT messaging. |
+| `timezone`       | The timezone used for interpreting timestamps (e.g., `dateObserved`). Helps normalize time-based data across deployments. |
+| `explicitAttrs`  | A list of attribute names expected from the device. It is used by the IoT Agent to filter and validate incoming payloads. Attributes not listed here are ignored. |
+| `attributes`     | A list that defines how incoming JSON fields (e.g., `"temperature"`, `"datetime"`) are mapped to NGSI-LD properties. Includes: <ul><li>`object_id`: the key in the MQTT payload</li><li>`name`: the NGSI-LD attribute name</li><li>`type`: NGSI-LD type (usually `"Property"`)</li><li>`metadata`: optional unit codes and other metadata</li></ul> |
 
 
 
