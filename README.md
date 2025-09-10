@@ -123,7 +123,7 @@ Semantic interoperability allows to refer to shared concepts using common identi
 
 In the DEDALUS project context, some terms have been described in the DEDALUS ontology ( https://github.com/engsep/dedalus-ontology/ ).
 
-- Context File example (`data-models/ngsi-project-context.jsonld`)
+- Context File example (`in folder data-models/ngsi-project-context.jsonld`)
   
 ```json
 {
