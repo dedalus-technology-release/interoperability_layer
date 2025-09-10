@@ -28,12 +28,6 @@
 - [References](#references)
 
 
-## Prerequisites
-- Docker (20.10+)
-- Docker Compose (1.29+)
-- Internet connection for image pulls
-
-
 ## Interoperability Layer
 
 According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged". In general terms, there is a list of interoperability layers defined, which includes: interoperability governance, integrated public service governance, legal interoperability, organisational interoperability, technical/syntactic interoperability, and semantic interoperability. 
@@ -42,22 +36,23 @@ The following sections describe the FIWARE-based interoperability framework, cal
 - Access shared data through a common vocabulary (e.g., using standard URIs like `https://w3id.org/dco#Temperature`).
 - Maintain their local terminology (e.g., `temperature`, `temperatura`, `temperatur`) while remaining interoperable.
   
-In the following, we will refer to a generic building, which will be identified asBuildingABC, where a device is installed, which  will be identified asdevice123, which sends the humidity and co2 measurements to the IoT Agent via the MQTT Broker.
+In the following, we will refer to a generic building, which will be identified as BuildingABC, where a device is installed, which  will be identified as device123, which sends the humidity and co2 measurements to the IoT Agent via the MQTT Broker.
 
 
 ## Architecture Overview
 
 The system leverages a **FIWARE-based architecture** consisting of the following core components:
 
-- **IoT Agent (NGSI-JSON)**: Receives device measurements via MQTT (in JSON) and converts them to NGSI-LD format.
+- **IoT Agent (IoT Agent NGSI-JSON)**: Receives device measurements via MQTT (in JSON) and converts them to NGSI-LD format.
 - **Context Broker (Orion-LD)**: Manages context data (entities, attributes, etc.) in NGSI-LD format.
 - **Database (MongoDB)**: Stores IoT Agent and Context Broker data.
 - **MQTT Broker (Mosquitto)**: Manages message exchange between devices and the IoT Agent.
-- **HTTP Web Server (?)**: Serves JSON-LD context files for data model semantics.
+- **HTTP Web Server (Apache HTTP Server)**: Serves JSON-LD context files for data model semantics.
 
 
 ## MQTT Message Format
-Devices publish their sensor data to MQTT topics with a specific pattern to enable the IoT Agent to properly route and process the data.
+
+Devices publish their sensor data to MQTT topics to enable the IoT Agent to properly process and route the data.
 
 **Topic format:**
 ```
@@ -66,7 +61,7 @@ Devices publish their sensor data to MQTT topics with a specific pattern to enab
 
 **Example:**
 ```
-/json/Project-Building4264/ws32158/attrs
+/json/Project-BuildingABC/device123/attrs
 ```
 
 **Payload example:**
@@ -80,24 +75,30 @@ Devices publish their sensor data to MQTT topics with a specific pattern to enab
 }
 ```
 Each payload contains the timestamp (datetime) and sensor measurements. The IoT Agent listens on these topics and converts incoming data into NGSI-LD format.
-## Docker Components
-The system runs as Docker containers for easy deployment and management.
 
-### MQTT Broker (Mosquitto)
 
-- Connects devices and the IoT Agent using MQTT protocol.
-- Can be configured to connect to a public broker or run locally.
-- Example Mosquitto configuration includes subscribing to relevant topics, e.g.:
+### MQTT Broker - Mosquitto
+
+The MQTT Broker connects devices and the IoT Agent using MQTT protocol. It can be configured to connect to a public broker or run locally.
+
+- Configuration:
+  
 ```yaml
 
 connection remote_mosquitto
 address test.mosquitto.org:1883
-topic /json/Project-Building4264/# in
+topic /json/Project-BuildingABC/# in
 ```
 
-### IoT Agent Configuration
+### IoT Agent - IoT Agent NGSI-JSON
 
-Exposed on port `4041`. Key environment variables:
+The purpose of the IoT Agent component is to take the measurements sent by the IoT Platform on the MQTT queue and to perform the appropriate transformations in terms of both naming and format to send the information to the Context Broker component. These transformations ensure that the data are standardized and compatible with the internal systems. The naming transformations are performed in compliance with the configurations, which instructs the IoT Agent on how it must translate the external terms (used by device) into the terms internal to the framework used by the Context Broker. These internal terms are contained in the Context File, which represents the common vocabulary agreed upon by all parties involved. This common vocabulary ensures that all data are consistently named and formatted, facilitating seamless interoperability and integration across different systems and platforms. Furthermore, the format used to communicate information to the Context Broker is NGSI-Linked Data (LD), which is a subset of the standard JSON-LD format. NGSI-LD provides a structured and efficient way to represent context information, enabling the Context Broker to process and manage the data effectively. By adhering to these standardized terms and formats, the IoT Agent ensures that the data can be accurately interpreted and utilized by the Context Broker, enabling effective data management and analysis. 
+
+
+The IoT Agent is exposed on port `4041`. 
+
+- Configuration (key environment variables):
+  
 ```bash
 
 IOTA_CB_HOST=orion                  # Context Broker hostname
@@ -108,9 +109,15 @@ IOTA_FALLBACK_TENANT=your_project
 IOTA_FALLBACK_PATH=/your_project_path
 ```
 
-### Context Broker (Orion-LD)
+### Context Broker - Orion-LD
 
-Runs on port `1026`, responsible for storing and updating NGSI-LD entities. Configuration includes:
+The Context Broker acts as central orchestrator of context data (entities, attributes, and relationships) and is responsible for:
+•	Storing, updating, and publishing real-time or historic context information
+•	Enabling subscription/notification to context changes (e.g., to analytics engines, dashboards, or connectors).
+
+It runs on port `1026`, responsible for storing and updating NGSI-LD entities. 
+
+- Configuration:
 
 ```bash
 -dbhost mongo-db
@@ -118,20 +125,194 @@ Runs on port `1026`, responsible for storing and updating NGSI-LD entities. Conf
 -logLevel DEBUG
 ```
 
-### Web Server (Context Host)
+### HTTP Web Server - ???
 
-Run on port `3004`. Serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
+The Web Server provides access to context files to all components that need them.
+
+It runs on port `3004`. Serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
+
+- Configuration:
+  
 ```
 http://context/ngsi-project-context.jsonld
 ```
 
-### MongoDB
+### Database - MongoDB
 
-Stores all provisioning and context data. Runs on port `27017`.
+It stores all provisioning and context data. 
+It runs on port `27017`.
+
+
+## Provisioning Examples
+This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
+
+### Context File (`ngsi-project-context.jsonld`)
+Semantic interoperability allows to refer to shared concepts using common identifiers, while still preserving their ability to use local terms internally and independently. For example, the concept of temperature can be globally identified by the URI https://w3id.org/dco#Temperature. One component might refer to it internally as "temperature" (in English), another as "temperatura" (in Italian), and yet another as "temperatur" (in Danish). Despite these variations, all components understand they are referring to the same shared concept, thanks to the common Uniform Resource Identifiers (URI). This level of semantic alignment in the Interoperability Layer leverages on an external Context File. As above described, the Context File serves as a mapping between local terms used by each component and their corresponding universal URIs. These URIs are recognized and accepted across all systems involved in data processing.
+
+In the DEDALUS project context, some terms have been described in the DEDALUS ontology ( https://github.com/engsep/dedalus-ontology/ ).
+
+- Context File example (`ngsi-project-context.jsonld`)
+  
+```json
+{
+  "@context": {
+    "type": "@type",
+    "id": "@id",
+    "ngsi-ld": "https://uri.etsi.org/ngsi-ld/",
+    "fiware": "https://uri.fiware.org/ns/dataModels#",
+    "schema": "https://schema.org/",
+    "Building": "https://w3id.org/dco#Building",
+    "Device": "https://w3id.org/dco#Device",
+    "temperature": "https://w3id.org/dco#Temperature",
+    "humidity": "https://w3id.org/dco#Humidity",
+    "co2": "https://w3id.org/dco#CO2Concentration",
+    "batteryVoltage": "https://w3id.org/dco#BatteryVoltage",
+    "controlledAsset": "fiware:controlledAsset",
+    "dateObserved": "http://www.w3.org/2001/XMLSchema#date"
+		"humidity": "https://engsep.github.io/dedalus-ontology/index-en.html#Humidity",
+		"co2": "https://engsep.github.io/dedalus-ontology/index-en.html#CO2",
+		"temperature": "https://engsep.github.io/dedalus-ontology/index-en.html#Temperature"
+  }
+}
+```
+
+### Building Entity Provisioning
+Create a building entity in the Context Broker with semantic attributes for address and location:
+
+```http
+POST http://localhost:1026/ngsi-ld/v1/entities/
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
+  Link: <http://context/ngsi-project-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"
+
+Payload:
+{
+  "id": "urn:ngsi-ld:Building:BuildingABC",
+  "type": "Building",
+  "address": {
+    "type": "Property",
+    "value": {
+      "streetAddress": "Example Street 17",
+      "addressRegion": "Region",
+      "addressLocality": "City",
+      "postalCode": "0000"
+    }
+  },
+  "location": {
+    "type": "GeoProperty",
+    "value": {
+      "type": "Point",
+      "coordinates": [0.000000, 0.000000]
+    }
+  },
+  "name": {
+    "type": "Property",
+    "value": "BuildingABC"
+  }
+}
+```
+
+### Device Entity Provisioning
+Associate a device to the building entity, enabling its measurements to be linked to a specific asset:
+
+```http
+POST http://localhost:1026/ngsi-ld/v1/entities/
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
+
+Payload:
+{
+  "id": "urn:ngsi-ld:Device:device123",
+  "type": "Device",
+  "name": {"type": "Property", "value": "device123"},
+  "controlledAsset": {
+    "type": "Relationship",
+    "object": ["urn:ngsi-ld:Building:BuildingABC"]
+  }
+}
+```
+
+### Service Group Provisioning
+Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
+```http
+POST http://localhost:4041/iot/services
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
+Payload:
+{
+  "services": [
+    {
+      "apikey": "Project-BuildingABC",
+      "cbroker": "http://orion:1026",
+      "entity_type": "Device",
+      "resource": ""
+    }
+  ]
+}
+```
+
+### Device Provisioning
+Configure the device in the IoT Agent, defining its protocol, transport, attributes, and timezone:
+
+```http
+POST http://localhost:4041/iot/devices
+Headers:
+  fiware-service: your-project
+  fiware-servicepath: /your-project-servicepath
+  Content-Type: application/json
+Payload:
+{
+  "devices": [
+    {
+      "device_id": "ws32158",
+      "entity_name": "urn:ngsi-ld:Device:device123",
+      "entity_type": "Device",
+      "apikey": "Project-BuildingABC",
+      "protocol": "IoTA-JSON",
+      "transport": "MQTT",
+      "timezone": "Europe/Berlin",
+      "explicitAttrs": [
+        "temperature", "humidity", "co2", "dateObserved", "unitCode"
+      ],
+      "attributes": [
+        {"object_id": "datetime", "name": "dateObserved", "type": "Property"},
+        {"object_id": "temperature", "name": "temperature", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "CEL"}}},
+        {"object_id": "humidity", "name": "humidity", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "P1"}}},
+        {"object_id": "co2", "name": "co2", "type": "Property",
+         "metadata": {"unitCode": {"type": "Text", "value": "KGM"}}},
+        
+      ]
+    }
+  ]
+}
+```
+### Summary – Device Provisioning Parameters Explained
+
+| Parameter        | Description |
+|------------------|-------------|
+| `device_id`      | The unique identifier for the device as seen in the MQTT topic. It is used to match incoming data from the topic `/json/<apikey>/<device_id>/attrs`. |
+| `entity_name`    | The NGSI-LD URN for the device entity that will be created in the Context Broker. It should follow the format: `urn:ngsi-ld:<entity_type>:<device_id>`. |
+| `entity_type`    | The type of the entity, typically `"Device"`, used by the Context Broker for classification. |
+| `apikey`         | A key used to distinguish services and filter MQTT topics. It becomes part of the MQTT topic structure (e.g., `/json/<apikey>/...`). |
+| `protocol`       | Specifies the format of the incoming payload. In this case: `"IoTA-JSON"` for plain JSON format. |
+| `transport`      | Communication protocol used by the device, typically `"MQTT"` for lightweight IoT messaging. |
+| `timezone`       | The timezone used for interpreting timestamps (e.g., `dateObserved`). Helps normalize time-based data across deployments. |
+| `explicitAttrs`  | A list of attribute names expected from the device. It is used by the IoT Agent to filter and validate incoming payloads. Attributes not listed here are ignored. |
+| `attributes`     | A list that defines how incoming JSON fields (e.g., `"temperature"`, `"datetime"`) are mapped to NGSI-LD properties. Includes: <ul><li>`object_id`: the key in the MQTT payload</li><li>`name`: the NGSI-LD attribute name</li><li>`type`: NGSI-LD type (usually `"Property"`)</li><li>`metadata`: optional unit codes and other metadata</li></ul> |
+
+
 
 ## Running the System with Docker Compose
 
-The `docker-compose.yml` file provided in this project sets up all required FIWARE components (Orion-LD, IoT Agent, MongoDB, MQTT Broker, Context Server) for a complete semantic IoT integration stack.
+The `docker-compose.yml` file provided in this project sets up all required components (Orion-LD, IoT Agent, MongoDB, MQTT Broker, HTTP Server) for a complete semantic IoT integration stack.
 
 >  **Note**:  
 > The configuration is currently tailored for the **Dedalus** project and uses:
@@ -143,7 +324,9 @@ The `docker-compose.yml` file provided in this project sets up all required FIWA
 > - The `IOTA_FALLBACK_TENANT`, `IOTA_FALLBACK_PATH`, and `IOTA_JSON_LD_CONTEXT` environment variables
 > - MQTT topic structure via the `apikey` used during provisioning
 
-## Run the System
+
+Ensure the following components are installed and running:
+•	**Docker (Version 23.0.3) & Docker Compose (Version 2.38.2)**
 
 To spin up the full environment, run:
 
@@ -170,176 +353,6 @@ docker ps
 ```
 You should see all containers (orion-ld, iot-agent, mongo-db, mosquitto, webserver-context) with the status healthy or up
 
-## Provisioning Examples
-This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
-
-### Context File Example (`ngsi-project-context.jsonld`)
-Defines the semantic context used across the system, mapping attribute names to standardized URIs:
-```json
-{
-  "@context": {
-    "type": "@type",
-    "id": "@id",
-    "ngsi-ld": "https://uri.etsi.org/ngsi-ld/",
-    "fiware": "https://uri.fiware.org/ns/dataModels#",
-    "schema": "https://schema.org/",
-    "Building": "https://w3id.org/dco#Building",
-    "Device": "https://w3id.org/dco#Device",
-    "temperature": "https://w3id.org/dco#Temperature",
-    "humidity": "https://w3id.org/dco#Humidity",
-    "co2": "https://w3id.org/dco#CO2Concentration",
-    "batteryVoltage": "https://w3id.org/dco#BatteryVoltage",
-    "controlledAsset": "fiware:controlledAsset",
-    "dateObserved": "http://www.w3.org/2001/XMLSchema#date"
-  }
-}
-```
-
-### Building Entity Provisioning
-Create a building entity in the Context Broker with semantic attributes for address and location:
-
-```http
-POST http://localhost:1026/ngsi-ld/v1/entities/
-Headers:
-  fiware-service: your-project
-  fiware-servicepath: /your-project-servicepath
-  Content-Type: application/json
-  Link: <http://context/ngsi-project-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"
-
-Payload:
-{
-  "id": "urn:ngsi-ld:Building:Building4264",
-  "type": "Building",
-  "address": {
-    "type": "Property",
-    "value": {
-      "streetAddress": "Example Street 17",
-      "addressRegion": "Region",
-      "addressLocality": "City",
-      "postalCode": "0000"
-    }
-  },
-  "location": {
-    "type": "GeoProperty",
-    "value": {
-      "type": "Point",
-      "coordinates": [0.000000, 0.000000]
-    }
-  },
-  "name": {
-    "type": "Property",
-    "value": "Building4264"
-  }
-}
-```
-
-### Device Entity Provisioning
-Associate a device with the building entity, enabling its measurements to be linked to a specific asset:
-```http
-POST http://localhost:1026/ngsi-ld/v1/entities/
-Headers:
-  fiware-service: your-project
-  fiware-servicepath: /your-project-servicepath
-  Content-Type: application/json
-
-Payload:
-{
-  "id": "urn:ngsi-ld:Device:ws32158",
-  "type": "Device",
-  "name": {"type": "Property", "value": "ws32158"},
-  "controlledAsset": {
-    "type": "Relationship",
-    "object": ["urn:ngsi-ld:Building:Building4264"]
-  }
-}
-```
-
-### Service Group Provisioning
-Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
-```http
-POST http://localhost:4041/iot/services
-Headers:
-  fiware-service: your-project
-  fiware-servicepath: /your-project-servicepath
-  Content-Type: application/json
-Payload:
-{
-  "services": [
-    {
-      "apikey": "Project-Building4264",
-      "cbroker": "http://orion:1026",
-      "entity_type": "Device",
-      "resource": ""
-    }
-  ]
-}
-```
-
-### Device Provisioning
-Configure the device in the IoT Agent, defining its protocol, transport, attributes, and timezone:
-```http
-POST http://localhost:4041/iot/devices
-Headers:
-  fiware-service: your-project
-  fiware-servicepath: /your-project-servicepath
-  Content-Type: application/json
-Payload:
-{
-  "devices": [
-    {
-      "device_id": "ws32158",
-      "entity_name": "urn:ngsi-ld:Device:ws32158",
-      "entity_type": "Device",
-      "apikey": "Project-Building4264",
-      "protocol": "IoTA-JSON",
-      "transport": "MQTT",
-      "timezone": "Europe/Berlin",
-      "explicitAttrs": [
-        "temperature", "humidity", "co2", "batteryVoltage", "dateObserved", "unitCode"
-      ],
-      "attributes": [
-        {"object_id": "datetime", "name": "dateObserved", "type": "Property"},
-        {"object_id": "temperature", "name": "temperature", "type": "Property",
-         "metadata": {"unitCode": {"type": "Text", "value": "CEL"}}},
-        {"object_id": "humidity", "name": "humidity", "type": "Property",
-         "metadata": {"unitCode": {"type": "Text", "value": "P1"}}},
-        {"object_id": "co2", "name": "co2", "type": "Property",
-         "metadata": {"unitCode": {"type": "Text", "value": "KGM"}}},
-        {"object_id": "batteryVoltage", "name": "batteryVoltage", "type": "Property",
-         "metadata": {"unitCode": {"type": "Text", "value": "VLT"}}}
-      ]
-    }
-  ]
-}
-```
-### Summary – Device Provisioning Parameters Explained
-
-| Parameter        | Description |
-|------------------|-------------|
-| `device_id`      | The unique identifier for the device as seen in the MQTT topic. It is used to match incoming data from the topic `/json/<apikey>/<device_id>/attrs`. |
-| `entity_name`    | The NGSI-LD URN for the device entity that will be created in the Context Broker. It should follow the format: `urn:ngsi-ld:<entity_type>:<device_id>`. |
-| `entity_type`    | The type of the entity, typically `"Device"`, used by the Context Broker for classification. |
-| `apikey`         | A key used to distinguish services and filter MQTT topics. It becomes part of the MQTT topic structure (e.g., `/json/<apikey>/...`). |
-| `protocol`       | Specifies the format of the incoming payload. In this case: `"IoTA-JSON"` for plain JSON format. |
-| `transport`      | Communication protocol used by the device, typically `"MQTT"` for lightweight IoT messaging. |
-| `timezone`       | The timezone used for interpreting timestamps (e.g., `dateObserved`). Helps normalize time-based data across deployments. |
-| `explicitAttrs`  | A list of attribute names expected from the device. It is used by the IoT Agent to filter and validate incoming payloads. Attributes not listed here are ignored. |
-| `attributes`     | A list that defines how incoming JSON fields (e.g., `"temperature"`, `"datetime"`) are mapped to NGSI-LD properties. Includes: <ul><li>`object_id`: the key in the MQTT payload</li><li>`name`: the NGSI-LD attribute name</li><li>`type`: NGSI-LD type (usually `"Property"`)</li><li>`metadata`: optional unit codes and other metadata</li></ul> |
-
-
-
-## Interoperability Levels
-
-1. **Device Level**: Each device can use its native terminology while remaining compatible with the system via configured transformation rules.
-2. **IoT Agent Level**: Attribute mapping during provisioning ensures correct transformation to NGSI-LD format.
-3. **Context Broker Level**: Context files allow external stakeholders to understand the data model in a consistent and multilingual way.
-
-### Example Use Case
-
-Multiple deployments (e.g., in different countries) can:
-- Use localized context files for internal data management.
-- Maintain external semantic alignment via standard URIs and context definitions.
-
 
 ### Environment Variables
 
@@ -358,6 +371,7 @@ project-root/
 │ └── mosquitto.conf
 ```
 Ensure that volume mounts in Docker Compose correspond to these paths.
+
 ### Troubleshooting
 - **Port conflicts:** Check if ports 1026, 4041, 27017, 1883, 3004 are free.
 - **MQTT messages not received:** Verify Mosquitto config and topic subscription.
