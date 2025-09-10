@@ -1,0 +1,26 @@
+{
+  "@context": {
+    "type": "@type",
+    "id": "@id",
+    "ngsi-ld": "https://uri.etsi.org/ngsi-ld/",
+    "fiware": "https://uri.fiware.org/ns/dataModels#",
+    "schema": "https://schema.org/",
+    "name": "schema:name",
+    "value": "fiware:value",
+	"unitCode": "ngsi-ld:unitCode",
+    "address": "schema:address",
+	"streetAddress": "schema:streetAddress",
+	"addressRegion": "schema:addressRegion",
+	"addressCountry": "schema:addressCountry",
+    "addressLocality": "schema:addressLocality",
+	"postalCode": "schema:postalCode",
+	"location": "https://w3id.org/saref#location",
+    "Building": "https://w3id.org/dco#Building",
+    "Device": "https://w3id.org/dco#Device",
+    "controlledAsset": "fiware:controlledAsset",
+    "dateObserved": "https://engsep.github.io/dedalus-ontology/index-en.html#Date_Observed", 
+	"humidity": "https://engsep.github.io/dedalus-ontology/index-en.html#Humidity",
+	"co2": "https://engsep.github.io/dedalus-ontology/index-en.html#CO2",
+	"temperature": "https://engsep.github.io/dedalus-ontology/index-en.html#Temperature"
+  }
+}

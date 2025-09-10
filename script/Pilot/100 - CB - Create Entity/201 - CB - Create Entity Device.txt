@@ -1,0 +1,17 @@
+curl --location 'http://orion:1026/ngsi-ld/v1/entities/' \
+--header 'fiware-service: "YOUR_FIWARE-SERVICE"' \
+--header 'fiware-servicepath: "YOUR_FIWARE-SERVICEPATH"' \
+--header 'Content-Type: application/json' \
+--header 'Link: <"YOUR_Context">; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \ 
+--data '{
+    "id": "urn:ngsi-ld:Device:device123",
+    "type": "Device",
+	"name":{"type":"Property","value":"device123"},
+    "controlledAsset": {
+        "type": "Relationship",
+        "object": [
+            "urn:ngsi-ld:Building:BuildingABC"
+        ]
+    }
+}    
+'

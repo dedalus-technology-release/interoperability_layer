@@ -1,0 +1,4 @@
+curl --location 'http://localhost:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Building:BuildingABC' \
+--header 'fiware-service: "YOUR_FIWARE-SERVICE"' \
+--header 'fiware-servicepath: "YOUR_FIWARE-SERVICEPATH"' \
+--header 'Link: <"YOUR_Context">; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \ 

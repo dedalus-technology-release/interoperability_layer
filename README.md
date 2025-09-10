@@ -2,26 +2,23 @@
 
 ## Table of Contents
 
-- [Interoperability Concept](#interoperability-concept)
+- [Interoperability Layer](#interoperability-layer)
 - [Architecture Overview](#architecture-overview)
 - [MQTT Message Format](#mqtt-message-format)
-- [Docker Components](#docker-components)
-  - [MQTT Broker (Mosquitto)](#mqtt-broker-mosquitto)
-  - [IoT Agent Configuration](#iot-agent-configuration)
-  - [Context Broker (Orion-LD)](#context-broker-orion-ld)
-  - [Web Server (Context Host)](#web-server-context-host)
-  - [MongoDB](#mongodb)
-- [Running the System with Docker Compose](#running-the-system-with-docker-compose)
-- [Verify Running Services](#verify-running-services)
+- [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)
+- [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)
+- [Context Broker - Orion-LD](#context-broker---orion-ld)
+- [HTTP Web Server - Apache HTTP Server](#http-web-server---apache-http-server)
+- [Database - MongoDB](#database---mongodb)
 - [Provisioning Examples](#provisioning-examples)
-  - [Context File Example (`ngsi-project-context.jsonld`)](#context-file-example-ngsi-project-contextjsonld)
+  - [Context File (`data-models/ngsi-project-context.jsonld`)](#context-file-data-modelsngsi-project-contextjsonld)
   - [Building Entity Provisioning](#building-entity-provisioning)
   - [Device Entity Provisioning](#device-entity-provisioning)
   - [Service Group Provisioning](#service-group-provisioning)
   - [Device Provisioning](#device-provisioning)
   - [Summary – Device Provisioning Parameters Explained](#summary--device-provisioning-parameters-explained)
-- [Interoperability Levels](#interoperability-levels)
-- [Example Use Case](#example-use-case)
+- [Running the System with Docker Compose](#running-the-system-with-docker-compose)
+- [Verify Running Services](#verify-running-services)
 - [Environment Variables](#environment-variables)
 - [Expected Folder Structure](#expected-folder-structure)
 - [Troubleshooting](#troubleshooting)
@@ -43,11 +40,13 @@ In the following, we will refer to a generic building, which will be identified 
 
 The system leverages a **FIWARE-based architecture** consisting of the following core components:
 
-- **IoT Agent (IoT Agent NGSI-JSON)**: Receives device measurements via MQTT (in JSON) and converts them to NGSI-LD format.
-- **Context Broker (Orion-LD)**: Manages context data (entities, attributes, etc.) in NGSI-LD format.
-- **Database (MongoDB)**: Stores IoT Agent and Context Broker data.
-- **MQTT Broker (Mosquitto)**: Manages message exchange between devices and the IoT Agent.
-- **HTTP Web Server (Apache HTTP Server)**: Serves JSON-LD context files for data model semantics.
+- **[IoT Agent (IoT Agent NGSI-JSON)](https://fiware-academy.readthedocs.io/en/latest/iot-agents/idas.html)**: Receives device measurements via MQTT (in JSON) and converts them to NGSI-LD format.
+- **[Context Broker (Orion-LD)](https://github.com/FIWARE/context.Orion-LD)**: Manages context data (entities, attributes, etc.) in NGSI-LD format.
+- **[Database (MongoDB)](https://www.mongodb.com/)**: Stores IoT Agent and Context Broker data.
+- **[MQTT Broker (Mosquitto)](https://mosquitto.org/)**: Manages message exchange between devices and the IoT Agent.
+- **[HTTP Web Server (Apache HTTP Server)](https://httpd.apache.org/)**: Serves JSON-LD context files for data model semantics.
+- **Provisioning (Device Provisioning)**: Handles the registration and configuration of devices within the system, enabling their integration with the IoT Agent and Context Broker.
+
 
 
 ## MQTT Message Format
@@ -70,8 +69,7 @@ Devices publish their sensor data to MQTT topics to enable the IoT Agent to prop
   "datetime": "2024-09-05T15:00:00.000000Z",
   "humidity": 61.33,
   "temperature": 25.13,
-  "co2": 419.0,
-  "batteryVoltage": 3.6
+  "co2": 419.0
 }
 ```
 Each payload contains the timestamp (datetime) and sensor measurements. The IoT Agent listens on these topics and converts incoming data into NGSI-LD format.
@@ -81,7 +79,7 @@ Each payload contains the timestamp (datetime) and sensor measurements. The IoT 
 
 The MQTT Broker connects devices and the IoT Agent using MQTT protocol. It can be configured to connect to a public broker or run locally.
 
-- Configuration:
+- Configuration in folder mosquito/mosquito.conf:
   
 ```yaml
 
@@ -97,18 +95,6 @@ The purpose of the IoT Agent component is to take the measurements sent by the I
 
 The IoT Agent is exposed on port `4041`. 
 
-- Configuration (key environment variables):
-  
-```bash
-
-IOTA_CB_HOST=orion                  # Context Broker hostname
-IOTA_MQTT_HOST=mosquitto            # MQTT Broker hostname
-IOTA_CB_NGSI_VERSION=ld             # Use NGSI-LD format
-IOTA_JSON_LD_CONTEXT=http://context/ngsi-project-context.jsonld
-IOTA_FALLBACK_TENANT=your_project
-IOTA_FALLBACK_PATH=/your_project_path
-```
-
 ### Context Broker - Orion-LD
 
 The Context Broker acts as central orchestrator of context data (entities, attributes, and relationships) and is responsible for:
@@ -117,25 +103,11 @@ The Context Broker acts as central orchestrator of context data (entities, attri
 
 It runs on port `1026`, responsible for storing and updating NGSI-LD entities. 
 
-- Configuration:
-
-```bash
--dbhost mongo-db
--db orionld
--logLevel DEBUG
-```
-
-### HTTP Web Server - ???
+### HTTP Web Server - Apache HTTP Server
 
 The Web Server provides access to context files to all components that need them.
 
 It runs on port `3004`. Serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
-
-- Configuration:
-  
-```
-http://context/ngsi-project-context.jsonld
-```
 
 ### Database - MongoDB
 
@@ -143,15 +115,15 @@ It stores all provisioning and context data.
 It runs on port `27017`.
 
 
-## Provisioning Examples
+### Provisioning Examples
 This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
 
-### Context File (`ngsi-project-context.jsonld`)
+### Context File (`data-models/ngsi-project-context.jsonld`)
 Semantic interoperability allows to refer to shared concepts using common identifiers, while still preserving their ability to use local terms internally and independently. For example, the concept of temperature can be globally identified by the URI https://w3id.org/dco#Temperature. One component might refer to it internally as "temperature" (in English), another as "temperatura" (in Italian), and yet another as "temperatur" (in Danish). Despite these variations, all components understand they are referring to the same shared concept, thanks to the common Uniform Resource Identifiers (URI). This level of semantic alignment in the Interoperability Layer leverages on an external Context File. As above described, the Context File serves as a mapping between local terms used by each component and their corresponding universal URIs. These URIs are recognized and accepted across all systems involved in data processing.
 
 In the DEDALUS project context, some terms have been described in the DEDALUS ontology ( https://github.com/engsep/dedalus-ontology/ ).
 
-- Context File example (`ngsi-project-context.jsonld`)
+- Context File example (`data-models/ngsi-project-context.jsonld`)
   
 ```json
 {
@@ -161,17 +133,23 @@ In the DEDALUS project context, some terms have been described in the DEDALUS on
     "ngsi-ld": "https://uri.etsi.org/ngsi-ld/",
     "fiware": "https://uri.fiware.org/ns/dataModels#",
     "schema": "https://schema.org/",
+    "name": "schema:name",
+    "value": "fiware:value",
+    "unitCode": "ngsi-ld:unitCode",
+    "address": "schema:address",
+    "streetAddress": "schema:streetAddress",
+    "addressRegion": "schema:addressRegion",
+    "addressCountry": "schema:addressCountry",
+    "addressLocality": "schema:addressLocality",
+    "postalCode": "schema:postalCode",
+    "location": "https://w3id.org/saref#location",
     "Building": "https://w3id.org/dco#Building",
     "Device": "https://w3id.org/dco#Device",
-    "temperature": "https://w3id.org/dco#Temperature",
-    "humidity": "https://w3id.org/dco#Humidity",
-    "co2": "https://w3id.org/dco#CO2Concentration",
-    "batteryVoltage": "https://w3id.org/dco#BatteryVoltage",
     "controlledAsset": "fiware:controlledAsset",
-    "dateObserved": "http://www.w3.org/2001/XMLSchema#date"
-		"humidity": "https://engsep.github.io/dedalus-ontology/index-en.html#Humidity",
-		"co2": "https://engsep.github.io/dedalus-ontology/index-en.html#CO2",
-		"temperature": "https://engsep.github.io/dedalus-ontology/index-en.html#Temperature"
+    "dateObserved": "https://engsep.github.io/dedalus-ontology/index-en.html#Date_Observed", 
+    "humidity": "https://engsep.github.io/dedalus-ontology/index-en.html#Humidity",
+    "co2": "https://engsep.github.io/dedalus-ontology/index-en.html#CO2",
+    "temperature": "https://engsep.github.io/dedalus-ontology/index-en.html#Temperature"
   }
 }
 ```
@@ -270,7 +248,7 @@ Payload:
 {
   "devices": [
     {
-      "device_id": "ws32158",
+      "device_id": "device123",
       "entity_name": "urn:ngsi-ld:Device:device123",
       "entity_type": "Device",
       "apikey": "Project-BuildingABC",
@@ -364,11 +342,18 @@ project-root/
 ├── docker-compose.yml
 ├── .env
 ├── models/
-│ └── ngsi-project-context.jsonld
+│   ├── ngsi-project-context.jsonld
+│   ├── ngsi-dedalus-context.jsonld
+│   └── ...
 ├── conf/
 │ └── mime.types
 ├── mosquitto/
 │ └── mosquitto.conf
+├── script/
+│ └── Pilot/
+│   ├── .../
+│ └── Dockerfile
+│ └── read_script.py
 ```
 Ensure that volume mounts in Docker Compose correspond to these paths.
 
