@@ -34,23 +34,26 @@
 - Internet connection for image pulls
 
 
-## Interoperability Concept
+## Interoperability Layer
 
-According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged."
+According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged". In general terms, there is a list of interoperability layers defined, which includes: interoperability governance, integrated public service governance, legal interoperability, organisational interoperability, technical/syntactic interoperability, and semantic interoperability. 
 
-This project emphasizes **semantic interoperability**, allowing various system components to:
+The following sections describe the FIWARE-based interoperability framework, called Interoperability Layer, which has been used in the context of the DEDALUS project, where semantic interoperability is of outmost importance. Semantic interoperability provides that the precise format and meaning of exchanged data and information is preserved and understood throughout exchanges between parties. It includes developing vocabularies and schemas to describe data exchanges and ensures that data elements are understood in the same way by all communicating parties. This allows various system components to:
 - Access shared data through a common vocabulary (e.g., using standard URIs like `https://w3id.org/dco#Temperature`).
 - Maintain their local terminology (e.g., `temperature`, `temperatura`, `temperatur`) while remaining interoperable.
+  
+In the following, we will refer to a generic building, which will be identified asBuildingABC, where a device is installed, which  will be identified asdevice123, which sends the following information measurements to the IoT Agent via the MQTT Broker.....
+
 
 ## Architecture Overview
 
 The system leverages a **FIWARE-based architecture** consisting of the following core components:
 
 - **IoT Agent (NGSI-JSON)**: Receives device measurements via MQTT (in JSON) and converts them to NGSI-LD format.
-- **Orion Context Broker (Orion-LD)**: Manages context data (entities, attributes, etc.) in NGSI-LD format.
-- **MongoDB**: Stores IoT Agent and Context Broker data.
-- **Mosquitto MQTT Broker**: Manages message exchange between devices and the IoT Agent.
-- **HTTP Web Server**: Serves JSON-LD context files for data model semantics.
+- **Context Broker (Orion-LD)**: Manages context data (entities, attributes, etc.) in NGSI-LD format.
+- **Database (MongoDB)**: Stores IoT Agent and Context Broker data.
+- **MQTT Broker (Mosquitto)**: Manages message exchange between devices and the IoT Agent.
+- **HTTP Web Server (?)**: Serves JSON-LD context files for data model semantics.
 
 
 ## MQTT Message Format
