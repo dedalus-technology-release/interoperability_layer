@@ -42,7 +42,7 @@ The following sections describe the FIWARE-based interoperability framework, cal
 - Access shared data through a common vocabulary (e.g., using standard URIs like `https://w3id.org/dco#Temperature`).
 - Maintain their local terminology (e.g., `temperature`, `temperatura`, `temperatur`) while remaining interoperable.
   
-In the following, we will refer to a generic building, which will be identified asBuildingABC, where a device is installed, which  will be identified asdevice123, which sends the following information measurements to the IoT Agent via the MQTT Broker.....
+In the following, we will refer to a generic building, which will be identified asBuildingABC, where a device is installed, which  will be identified asdevice123, which sends the humidity and co2 measurements to the IoT Agent via the MQTT Broker.
 
 
 ## Architecture Overview
