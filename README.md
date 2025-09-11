@@ -158,6 +158,7 @@ This section demonstrates how to provision entities, services, and devices in th
 
 ### Building Entity Provisioning
 Create a building entity in the Context Broker with semantic attributes for address and location:
+
 **Script files path:**  
 `script/Pilot/100 - CB - Create Entity`  
 Example file names: `101 - CB - Create Entity Building.txt`.
@@ -200,6 +201,7 @@ Payload:
 
 ### Device Entity Provisioning
 Associate a device to the building entity, enabling its measurements to be linked to a specific asset:
+
 **Script files path:**  
 `script/Pilot/100 - CB - Create Entity`  
 Example file names: `201 - CB - Create Entity Building.txt`.
@@ -224,6 +226,7 @@ Payload:
 
 ### Service Group Provisioning
 Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
+
 **Script files path:**  
 `script/Pilot/200 - IOT - Create Service Group`  
 Example file names: `101 - IOT - Create Service Group.txt`.
@@ -249,6 +252,7 @@ Payload:
 
 ### Device Provisioning
 Configure the device in the IoT Agent, defining its protocol, transport, attributes, and timezone:
+
 **Script files path:** 
 `script/Pilot/300 - IOT - Create Provisioned Device`  
 Example file names: `101 - IOT - Create Provisioned Device.txt`.
