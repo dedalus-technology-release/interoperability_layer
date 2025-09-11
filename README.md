@@ -10,8 +10,8 @@
 - [Context Broker - Orion-LD](#context-broker---orion-ld)
 - [HTTP Web Server - Apache HTTP Server](#http-web-server---apache-http-server)
 - [Database - MongoDB](#database---mongodb)
+- [Context File (`da-models/ngsi-project-context.jsonld`)](#context-file-data-modelsngsi-project-contextjsonld)
 - [Provisioning Examples](#provisioning-examples)
-  - [Context File (`data-models/ngsi-project-context.jsonld`)](#context-file-data-modelsngsi-project-contextjsonld)
   - [Building Entity Provisioning](#building-entity-provisioning)
   - [Device Entity Provisioning](#device-entity-provisioning)
   - [Service Group Provisioning](#service-group-provisioning)
@@ -47,34 +47,7 @@ The system leverages a **FIWARE-based architecture** consisting of the following
 - **[HTTP Web Server (Apache HTTP Server)](https://httpd.apache.org/)**: Serves JSON-LD context files for data model semantics.
 - **Provisioning (Device Provisioning)**: Handles the registration and configuration of devices within the system, enabling their integration with the IoT Agent and Context Broker.
 
-
-
-## MQTT Message Format
-
-Devices publish their sensor data to MQTT topics to enable the IoT Agent to properly process and route the data.
-
-**Topic format:**
-```
-/json/<api-key>/<device-id>/attrs
-```
-
-**Example:**
-```
-/json/Project-BuildingABC/device123/attrs
-```
-
-**Payload example:**
-```json
-{
-  "datetime": "2024-09-05T15:00:00.000000Z",
-  "humidity": 61.33,
-  "temperature": 25.13,
-  "co2": 419.0
-}
-```
-Each payload contains the timestamp (datetime) and sensor measurements. The IoT Agent listens on these topics and converts incoming data into NGSI-LD format.
-
-
+**Provisioning (Device Provisioning)**: Handles the registration and configuration of devices within the system, enabling their integration with the IoT Agent and Context Broker.
 ### MQTT Broker - Mosquitto
 
 The MQTT Broker connects devices and the IoT Agent using MQTT protocol. It can be configured to connect to a public broker or run locally.
@@ -97,17 +70,17 @@ The IoT Agent is exposed on port `4041`.
 
 ### Context Broker - Orion-LD
 
-The Context Broker acts as central orchestrator of context data (entities, attributes, and relationships) and is responsible for:
+The Context Broker acts as central orchestrator of context data (NGSI-LD entities, attributes, and relationships) and is responsible for:
 •	Storing, updating, and publishing real-time or historic context information
 •	Enabling subscription/notification to context changes (e.g., to analytics engines, dashboards, or connectors).
 
-It runs on port `1026`, responsible for storing and updating NGSI-LD entities. 
+It runs on port `1026`. 
 
 ### HTTP Web Server - Apache HTTP Server
 
-The Web Server provides access to context files to all components that need them.
+The Web Server serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
 
-It runs on port `3004`. Serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
+It runs on port `3004`.
 
 ### Database - MongoDB
 
@@ -115,10 +88,7 @@ It stores all provisioning and context data.
 It runs on port `27017`.
 
 
-### Provisioning Examples
-This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem.
-
-### Context File (`data-models/ngsi-project-context.jsonld`)
+## Context File (`data-models/ngsi-project-context.jsonld`)
 Semantic interoperability allows to refer to shared concepts using common identifiers, while still preserving their ability to use local terms internally and independently. For example, the concept of temperature can be globally identified by the URI https://w3id.org/dco#Temperature. One component might refer to it internally as "temperature" (in English), another as "temperatura" (in Italian), and yet another as "temperatur" (in Danish). Despite these variations, all components understand they are referring to the same shared concept, thanks to the common Uniform Resource Identifiers (URI). This level of semantic alignment in the Interoperability Layer leverages on an external Context File. As above described, the Context File serves as a mapping between local terms used by each component and their corresponding universal URIs. These URIs are recognized and accepted across all systems involved in data processing.
 
 In the DEDALUS project context, some terms have been described in the DEDALUS ontology ( https://github.com/engsep/dedalus-ontology/ ).
@@ -153,6 +123,9 @@ In the DEDALUS project context, some terms have been described in the DEDALUS on
   }
 }
 ```
+
+## Provisioning Examples
+This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem. 
 
 ### Building Entity Provisioning
 Create a building entity in the Context Broker with semantic attributes for address and location:
@@ -272,6 +245,7 @@ Payload:
   ]
 }
 ```
+
 ### Summary – Device Provisioning Parameters Explained
 
 | Parameter        | Description |
@@ -287,10 +261,36 @@ Payload:
 | `attributes`     | A list that defines how incoming JSON fields (e.g., `"temperature"`, `"datetime"`) are mapped to NGSI-LD properties. Includes: <ul><li>`object_id`: the key in the MQTT payload</li><li>`name`: the NGSI-LD attribute name</li><li>`type`: NGSI-LD type (usually `"Property"`)</li><li>`metadata`: optional unit codes and other metadata</li></ul> |
 
 
+## MQTT Message Format
+
+Devices publish their sensor data to MQTT topics to enable the IoT Agent to properly process and route the data.
+
+**Topic format:**
+```
+/json/<api-key>/<device-id>/attrs
+```
+
+**Example:**
+```
+/json/Project-BuildingABC/device123/attrs
+```
+
+**Payload example:**
+```json
+{
+  "datetime": "2024-09-05T15:00:00.000000Z",
+  "humidity": 61.33,
+  "temperature": 25.13,
+  "co2": 419.0
+}
+```
+Each payload contains the timestamp (datetime) and sensor measurements. The IoT Agent listens on these topics and converts incoming data into NGSI-LD format.
+
 
 ## Running the System with Docker Compose
 
 The `docker-compose.yml` file provided in this project sets up all required components (Orion-LD, IoT Agent, MongoDB, MQTT Broker, HTTP Server) for a complete semantic IoT integration stack.
+
 
 >  **Note**:  
 > The configuration is currently tailored for the **Dedalus** project and uses:
