@@ -1,27 +1,31 @@
 # Interoperability Layer – Project Overview
 
-## Table of Contents
+# Table of Contents
 
-- [Interoperability Layer](#interoperability-layer)
-- [Architecture Overview](#architecture-overview)
-- [MQTT Message Format](#mqtt-message-format)
-- [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)
-- [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)
-- [Context Broker - Orion-LD](#context-broker---orion-ld)
-- [HTTP Web Server - Apache HTTP Server](#http-web-server---apache-http-server)
-- [Database - MongoDB](#database---mongodb)
-- [Context File (`da-models/ngsi-project-context.jsonld`)](#context-file-data-modelsngsi-project-contextjsonld)
-- [Provisioning Examples](#provisioning-examples)
-  - [Building Entity Provisioning](#building-entity-provisioning)
-  - [Device Entity Provisioning](#device-entity-provisioning)
-  - [Service Group Provisioning](#service-group-provisioning)
-  - [Device Provisioning](#device-provisioning)
-  - [Summary – Device Provisioning Parameters Explained](#summary--device-provisioning-parameters-explained)
-- [Running the System with Docker Compose](#running-the-system-with-docker-compose)
-- [Verify Running Services](#verify-running-services)
-- [Environment Variables](#environment-variables)
-- [Expected Folder Structure](#expected-folder-structure)
-- [Troubleshooting](#troubleshooting)
+- [Interoperability Layer – Project Overview](#interoperability-layer--project-overview)  
+- [Interoperability Layer](#interoperability-layer)  
+- [Architecture Overview](#architecture-overview)  
+- [MQTT Message Format](#mqtt-message-format)  
+- [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)  
+- [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)  
+- [Context Broker - Orion-LD](#context-broker---orion-ld)  
+- [HTTP Web Server - Apache HTTP Server](#http-web-server---apache-http-server)  
+- [Database - MongoDB](#database---mongodb)  
+- [Context File (`data-models/ngsi-project-context.jsonld`)](#context-file-data-modelsngsi-project-contextjsonld)  
+- [Provisioning (Device Provisioning)](#provisioning-device-provisioning)  
+  - [Script Organization](#script-organization)  
+  - [Naming and Execution Order](#naming-and-execution-order)  
+- [Provisioning Examples](#provisioning-examples)  
+  - [Building Entity Provisioning](#building-entity-provisioning)  
+  - [Device Entity Provisioning](#device-entity-provisioning)  
+  - [Service Group Provisioning](#service-group-provisioning)  
+  - [Device Provisioning](#device-provisioning)  
+  - [Summary – Device Provisioning Parameters Explained](#summary--device-provisioning-parameters-explained)  
+- [Running the System with Docker Compose](#running-the-system-with-docker-compose)  
+- [Verify Running Services](#verify-running-services)  
+- [Environment Variables](#environment-variables)  
+- [Expected Folder Structure](#expected-folder-structure)  
+- [Troubleshooting](#troubleshooting)  
 - [References](#references)
 
 
@@ -47,7 +51,32 @@ The system leverages a **FIWARE-based architecture** consisting of the following
 - **[HTTP Web Server (Apache HTTP Server)](https://httpd.apache.org/)**: Serves JSON-LD context files for data model semantics.
 - **Provisioning (Device Provisioning)**: Handles the registration and configuration of devices within the system, enabling their integration with the IoT Agent and Context Broker.
 
-**Provisioning (Device Provisioning)**: Handles the registration and configuration of devices within the system, enabling their integration with the IoT Agent and Context Broker.
+## Provisioning (Device Provisioning)
+
+The provisioning process is automated through the `script/Pilot/read_script.py` script, which sequentially executes a series of configuration templates organized in specific folders. These templates define buildings, devices, service groups, and device provisioning entities, ensuring their proper registration and configuration within the system.
+
+### Script Organization
+
+- **Entity creation templates** for buildings and devices are stored in:  
+  `script/Pilot/100 - CB - Create Entity`
+
+- **Service group templates** are stored in:  
+  `script/Pilot/200 - IOT - Create Service Group`
+
+- **Device provisioning templates** are stored in:  
+  `script/Pilot/300 - IOT - Create Provisioned Device`
+
+### Naming and Execution Order
+
+Files use a numbered prefix to determine execution order within each folder. The `script/Pilot/read_script.py` script processes folders and files in ascending order of these prefixes, ensuring consistent and repeatable provisioning.
+
+Example file naming patterns:
+
+- Buildings: `101 - CB - Create Entity Building.txt`, ...
+- Devices: `201 - CB - Create Entity Device.txt`, ...
+- Service groups: `101 - IOT - Create Service Group.txt`, ...
+- Provisioned devices: `101 - IOT - Create Provisioned Device.txt`, ...
+
 ### MQTT Broker - Mosquitto
 
 The MQTT Broker connects devices and the IoT Agent using MQTT protocol. It can be configured to connect to a public broker or run locally.
@@ -129,6 +158,10 @@ This section demonstrates how to provision entities, services, and devices in th
 
 ### Building Entity Provisioning
 Create a building entity in the Context Broker with semantic attributes for address and location:
+**Script files path:**  
+`script/Pilot/100 - CB - Create Entity`  
+Example file names: `101 - CB - Create Entity Building.txt`.
+
 
 ```http
 POST http://localhost:1026/ngsi-ld/v1/entities/
@@ -167,7 +200,9 @@ Payload:
 
 ### Device Entity Provisioning
 Associate a device to the building entity, enabling its measurements to be linked to a specific asset:
-
+**Script files path:**  
+`script/Pilot/100 - CB - Create Entity`  
+Example file names: `201 - CB - Create Entity Building.txt`.
 ```http
 POST http://localhost:1026/ngsi-ld/v1/entities/
 Headers:
@@ -189,6 +224,10 @@ Payload:
 
 ### Service Group Provisioning
 Register a service group in the IoT Agent, linking API keys to the Context Broker and entity types:
+**Script files path:**  
+`script/Pilot/200 - IOT - Create Service Group`  
+Example file names: `101 - IOT - Create Service Group.txt`.
+
 ```http
 POST http://localhost:4041/iot/services
 Headers:
@@ -210,6 +249,9 @@ Payload:
 
 ### Device Provisioning
 Configure the device in the IoT Agent, defining its protocol, transport, attributes, and timezone:
+**Script files path:** 
+`script/Pilot/300 - IOT - Create Provisioned Device`  
+Example file names: `101 - IOT - Create Provisioned Device.txt`.
 
 ```http
 POST http://localhost:4041/iot/devices
@@ -337,6 +379,7 @@ You should see all containers (orion-ld, iot-agent, mongo-db, mosquitto, webserv
 The `docker-compose.yml` relies on environment variables defined in the `.env` file. Customize ports, versions, and paths according to your environment.
 
 ### Expected Folder Structure
+
 ```plaintext
 project-root/
 ├── docker-compose.yml
@@ -346,14 +389,23 @@ project-root/
 │   ├── ngsi-dedalus-context.jsonld
 │   └── ...
 ├── conf/
-│ └── mime.types
+│   └── mime.types
 ├── mosquitto/
-│ └── mosquitto.conf
+│   └── mosquitto.conf
 ├── script/
-│ └── Pilot/
-│   ├── .../
-│ └── Dockerfile
-│ └── read_script.py
+│   └── Pilot/
+│       ├── 100 - CB - Create Entity/
+│       │   ├── 101 - CB - Create Entity Building.txt
+│       │   ├── 201 - CB - Create Entity Device.txt
+│       │   └── ...
+│       ├── 200 - IOT - Create Service Group/
+│       │   ├── 101 - IOT - Create Service Group.txt
+│       │   └── ...
+│       ├── 300 - IOT - Create Provisioned Device/
+│       │   ├── 101 - IOT - Create Provisioned Device.txt
+│       │   └── ...
+│       ├── Dockerfile
+│       └── read_script.py
 ```
 Ensure that volume mounts in Docker Compose correspond to these paths.
 
