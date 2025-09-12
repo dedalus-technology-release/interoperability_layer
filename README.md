@@ -1,8 +1,6 @@
 # Interoperability Layer
 
-# Table of Contents
-
-- [Interoperability Layer (#interoperability-layer)   
+- [Interoperability Layer (#interoperability_layer)   
 - [Architecture Overview](#architecture-overview)  
   - [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)  
   - [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)  
