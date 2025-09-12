@@ -1,20 +1,21 @@
-# Interoperability Layer – Project Overview
+# Interoperability Layer
 
 # Table of Contents
 
-- [Interoperability Layer – Project Overview](#interoperability-layer--project-overview)  
-- [Interoperability Layer](#interoperability-layer)  
+- [Interoperability Layer (#interoperability-layer)   
 - [Architecture Overview](#architecture-overview)  
-- [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)  
-- [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)  
-- [Context Broker - Orion-LD](#context-broker---orion-ld)  
-- [HTTP Web Server - Apache HTTP Server](#http-web-server---apache-http-server)  
-- [Database - MongoDB](#database---mongodb)  
+  - [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)  
+  - [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)  
+  - [Context Broker - Orion-LD](#context-broker---orion-ld)  
+  - [HTTP Web Server - Apache HTTP Server](#http-web-server---apache-http-server)  
+  - [Database - MongoDB](#database---mongodb)  
 - [Context File (`data-models/ngsi-project-context.jsonld`)](#context-file-data-modelsngsi-project-contextjsonld)  
 - [Provisioning (Device Provisioning)](#provisioning-device-provisioning)  
   - [Script Organization](#script-organization)  
   - [Naming and Execution Order](#naming-and-execution-order)  
-- [Provisioning Examples](#provisioning-examples)  
+- [Provisioning Examples](#provisioning-examples)
+  - [Script Organization](#script-organization)  
+  - [Naming and Execution Order](#naming-and-execution-order)  
   - [Building Entity Provisioning](#building-entity-provisioning)  
   - [Device Entity Provisioning](#device-entity-provisioning)  
   - [Service Group Provisioning](#service-group-provisioning)  
@@ -28,8 +29,6 @@
 - [Troubleshooting](#troubleshooting)  
 - [References](#references)
 
-
-## Interoperability Layer
 
 According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged". In general terms, there is a list of interoperability layers defined, which includes: interoperability governance, integrated public service governance, legal interoperability, organisational interoperability, technical/syntactic interoperability, and semantic interoperability. 
 
@@ -49,33 +48,7 @@ The system leverages a **FIWARE-based architecture** consisting of the following
 - **[Database (MongoDB)](https://www.mongodb.com/)**: Stores IoT Agent and Context Broker data.
 - **[MQTT Broker (Mosquitto)](https://mosquitto.org/)**: Manages message exchange between devices and the IoT Agent.
 - **[HTTP Web Server (Apache HTTP Server)](https://httpd.apache.org/)**: Serves JSON-LD context files for data model semantics.
-- **Provisioning (Device Provisioning)**: Handles the registration and configuration of devices within the system, enabling their integration with the IoT Agent and Context Broker.
 
-## Provisioning (Device Provisioning)
-
-The provisioning process is automated through the `script/Pilot/read_script.py` script, which sequentially executes a series of configuration templates organized in specific folders. These templates define buildings, devices, service groups, and device provisioning entities, ensuring their proper registration and configuration within the system.
-
-### Script Organization
-
-- **Entity creation templates** for buildings and devices are stored in:  
-  `script/Pilot/100 - CB - Create Entity`
-
-- **Service group templates** are stored in:  
-  `script/Pilot/200 - IOT - Create Service Group`
-
-- **Device provisioning templates** are stored in:  
-  `script/Pilot/300 - IOT - Create Provisioned Device`
-
-### Naming and Execution Order
-
-Files use a numbered prefix to determine execution order within each folder. The `script/Pilot/read_script.py` script processes folders and files in ascending order of these prefixes, ensuring consistent and repeatable provisioning.
-
-Example file naming patterns:
-
-- Buildings: `101 - CB - Create Entity Building.txt`, ...
-- Devices: `201 - CB - Create Entity Device.txt`, ...
-- Service groups: `101 - IOT - Create Service Group.txt`, ...
-- Provisioned devices: `101 - IOT - Create Provisioned Device.txt`, ...
 
 ### MQTT Broker - Mosquitto
 
@@ -110,6 +83,7 @@ It runs on port `1026`.
 The Web Server serves JSON-LD context files that define the semantic data model, enabling clients to understand attribute meanings.
 
 It runs on port `3004`.
+
 
 ### Database - MongoDB
 
@@ -155,6 +129,29 @@ In the DEDALUS project context, some terms have been described in the DEDALUS on
 
 ## Provisioning Examples
 This section demonstrates how to provision entities, services, and devices in the FIWARE ecosystem. 
+The provisioning process is automated through the `script/Pilot/read_script.py` script, which sequentially executes a series of configuration templates organized in specific folders. These templates define buildings, devices, service groups, and device provisioning entities, ensuring their proper registration and configuration within the system.
+
+### Script Organization
+
+- **Entity creation templates** for buildings and devices are stored in:  
+  `script/Pilot/100 - CB - Create Entity`
+
+- **Service group templates** are stored in:  
+  `script/Pilot/200 - IOT - Create Service Group`
+
+- **Device provisioning templates** are stored in:  
+  `script/Pilot/300 - IOT - Create Provisioned Device`
+
+### Naming and Execution Order
+
+Files use a numbered prefix to determine execution order within each folder. The `script/Pilot/read_script.py` script processes folders and files in ascending order of these prefixes, ensuring consistent and repeatable provisioning.
+
+Example file naming patterns:
+
+- Buildings: `101 - CB - Create Entity Building.txt`, ...
+- Devices: `201 - CB - Create Entity Device.txt`, ...
+- Service groups: `101 - IOT - Create Service Group.txt`, ...
+- Provisioned devices: `101 - IOT - Create Provisioned Device.txt`, ...
 
 ### Building Entity Provisioning
 Create a building entity in the Context Broker with semantic attributes for address and location:
