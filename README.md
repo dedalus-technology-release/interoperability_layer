@@ -1,6 +1,13 @@
 # Interoperability Layer
 
-- [Interoperability Layer](#interoperability_layer)   
+According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged". In general terms, there is a list of interoperability layers defined, which includes: interoperability governance, integrated public service governance, legal interoperability, organisational interoperability, technical/syntactic interoperability, and semantic interoperability. 
+
+The following sections describe the FIWARE-based interoperability framework, called Interoperability Layer, which has been used in the context of the DEDALUS project, where semantic interoperability is of outmost importance. Semantic interoperability provides that the precise format and meaning of exchanged data and information is preserved and understood throughout exchanges between parties. It includes developing vocabularies and schemas to describe data exchanges and ensures that data elements are understood in the same way by all communicating parties. This allows various system components to:
+- Access shared data through a common vocabulary (e.g., using standard URIs like `https://w3id.org/dco#Temperature`).
+- Maintain their local terminology (e.g., `temperature`, `temperatura`, `temperatur`) while remaining interoperable.
+  
+In the following, we will refer to a generic building, which will be identified as BuildingABC, where a device is installed, which  will be identified as device123, which sends the humidity and co2 measurements to the IoT Agent via the MQTT Broker.
+
 - [Architecture Overview](#architecture-overview)  
   - [MQTT Broker - Mosquitto](#mqtt-broker---mosquitto)  
   - [IoT Agent - IoT Agent NGSI-JSON](#iot-agent---iot-agent-ngsi-json)  
@@ -26,16 +33,6 @@
 - [Expected Folder Structure](#expected-folder-structure)  
 - [Troubleshooting](#troubleshooting)  
 - [References](#references)
-
-
-According to IEEE, interoperability is "the ability of two or more systems or components to exchange information and to use the information that has been exchanged". In general terms, there is a list of interoperability layers defined, which includes: interoperability governance, integrated public service governance, legal interoperability, organisational interoperability, technical/syntactic interoperability, and semantic interoperability. 
-
-The following sections describe the FIWARE-based interoperability framework, called Interoperability Layer, which has been used in the context of the DEDALUS project, where semantic interoperability is of outmost importance. Semantic interoperability provides that the precise format and meaning of exchanged data and information is preserved and understood throughout exchanges between parties. It includes developing vocabularies and schemas to describe data exchanges and ensures that data elements are understood in the same way by all communicating parties. This allows various system components to:
-- Access shared data through a common vocabulary (e.g., using standard URIs like `https://w3id.org/dco#Temperature`).
-- Maintain their local terminology (e.g., `temperature`, `temperatura`, `temperatur`) while remaining interoperable.
-  
-In the following, we will refer to a generic building, which will be identified as BuildingABC, where a device is installed, which  will be identified as device123, which sends the humidity and co2 measurements to the IoT Agent via the MQTT Broker.
-
 
 ## Architecture Overview
 
